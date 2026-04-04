@@ -1,12 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
-  AlertTriangle,
-  XCircle,
   Shield,
   Globe,
   Server,
-  Network,
   ClipboardList,
   ArrowRight,
 } from "lucide-react";
@@ -20,6 +17,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { useAppStore } from "@/stores/app-store";
 import { timeSince } from "@/lib/format";
 import { cn } from "@/lib/cn";
+import type { TlsCert, AuditEntry } from "@/lib/types";
 
 export default function DashboardView() {
   const setView = useAppStore((s) => s.setView);
@@ -32,13 +30,13 @@ export default function DashboardView() {
 
   const { data: tlsData } = useQuery({
     queryKey: ["tls-certs"],
-    queryFn: tlsApi.listCerts,
+    queryFn: tlsApi.list,
     refetchInterval: 15_000,
   });
 
   const { data: dnsData } = useQuery({
     queryKey: ["dns-entries"],
-    queryFn: dnsApi.listEntries,
+    queryFn: dnsApi.list,
     refetchInterval: 15_000,
   });
 
@@ -54,13 +52,13 @@ export default function DashboardView() {
   });
 
   const services = servicesData?.services ?? [];
-  const certs = tlsData?.certificates ?? [];
+  const certs = tlsData?.certs ?? [];
   const dnsEntries = dnsData?.entries ?? [];
   const servers = serversData?.servers ?? [];
   const auditEntries = auditData?.entries ?? [];
 
-  const servicesUp = services.filter((s) => s.health_status === "up").length;
-  const certsValid = certs.filter((c) => c.status === "valid").length;
+  const servicesUp = services.filter((s) => s.status === "up").length;
+  const certsValid = certs.filter((c: TlsCert) => c.status === "valid").length;
 
   return (
     <div className="h-full overflow-y-auto bg-surface-0 p-6">
@@ -143,7 +141,7 @@ export default function DashboardView() {
                   className="rounded-xl border border-border bg-surface-1 p-3.5"
                 >
                   <div className="mb-2 flex items-center gap-2">
-                    <HealthDot status={svc.health_status} size="sm" />
+                    <HealthDot status={svc.status === "unknown" ? undefined : svc.status} size="sm" />
                     <span className="truncate text-sm font-semibold text-text-1">
                       {svc.name}
                     </span>
@@ -155,9 +153,9 @@ export default function DashboardView() {
                     {svc.response_time != null && (
                       <p className="font-mono">{svc.response_time}ms</p>
                     )}
-                    {svc.last_health_check && (
+                    {svc.last_check && (
                       <p className="text-text-muted">
-                        Checked {timeSince(svc.last_health_check)}
+                        Checked {timeSince(svc.last_check)}
                       </p>
                     )}
                   </div>
@@ -177,7 +175,7 @@ export default function DashboardView() {
               </p>
             ) : (
               <div className="space-y-2">
-                {auditEntries.map((entry, i) => (
+                {auditEntries.map((entry: AuditEntry, i: number) => (
                   <div
                     key={`${entry.timestamp}-${i}`}
                     className="flex items-start gap-2 rounded-lg bg-surface-0 p-2.5"

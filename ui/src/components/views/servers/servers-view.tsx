@@ -6,7 +6,7 @@ import { HealthDot } from "@/components/shared/health-dot";
 import { EmptyState } from "@/components/shared/empty-state";
 import { cn } from "@/lib/cn";
 import { formatBytes } from "@/lib/format";
-import type { ServerInfo, GpuInfo, ContainerInfo } from "@/lib/types";
+import type { ServerStats, GpuInfo, ContainerInfo } from "@/lib/types";
 
 export default function ServersView() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
@@ -106,7 +106,7 @@ function ServerCard({
   expanded,
   onToggle,
 }: {
-  server: ServerInfo;
+  server: ServerStats;
   expanded: boolean;
   onToggle: () => void;
 }) {
@@ -189,7 +189,7 @@ function ServerCard({
                 GPUs ({server.gpus.length})
               </h4>
               <div className="space-y-2">
-                {server.gpus.map((gpu, i) => (
+                {server.gpus.map((gpu: GpuInfo, i: number) => (
                   <GpuCard key={i} gpu={gpu} />
                 ))}
               </div>
@@ -203,7 +203,7 @@ function ServerCard({
                 Containers ({server.containers.length})
               </h4>
               <div className="space-y-1">
-                {server.containers.map((c) => (
+                {server.containers.map((c: ContainerInfo) => (
                   <ContainerRow key={c.id} container={c} />
                 ))}
               </div>

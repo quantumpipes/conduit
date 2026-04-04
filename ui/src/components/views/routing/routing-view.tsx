@@ -138,7 +138,7 @@ function RouteCard({ route }: { route: Route }) {
     <div className="group rounded-xl border border-border bg-surface-1 p-4 transition-colors hover:border-surface-4">
       {/* Domain + health */}
       <div className="mb-3 flex items-center gap-2.5">
-        <HealthDot status={route.health_status} size="sm" />
+        <HealthDot status={route.health_status === "unknown" ? undefined : route.health_status} size="sm" />
         <h3 className="truncate text-[15px] font-semibold text-text-1">
           {route.domain}
         </h3>

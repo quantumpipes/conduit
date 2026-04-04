@@ -17,15 +17,15 @@ export default function DnsView() {
 
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ["dns-entries"],
-    queryFn: dnsApi.listEntries,
+    queryFn: dnsApi.list,
     refetchInterval: 15_000,
   });
 
   const entries = data?.entries ?? [];
 
-  const conduitCount = entries.filter((e) => e.source === "conduit").length;
-  const staticCount = entries.filter((e) => e.source === "static").length;
-  const systemCount = entries.filter((e) => e.source === "system").length;
+  const conduitCount = entries.filter((e: DnsEntry) => e.source === "conduit").length;
+  const staticCount = entries.filter((e: DnsEntry) => e.source === "static").length;
+  const systemCount = entries.filter((e: DnsEntry) => e.source === "system").length;
 
   const flushMut = useMutation({
     mutationFn: () => dnsApi.flush(),
@@ -158,7 +158,7 @@ export default function DnsView() {
               <span>Created</span>
             </div>
             <div className="divide-y divide-border">
-              {entries.map((entry, i) => (
+              {entries.map((entry: DnsEntry, i: number) => (
                 <DnsRow key={`${entry.domain}-${i}`} entry={entry} />
               ))}
             </div>

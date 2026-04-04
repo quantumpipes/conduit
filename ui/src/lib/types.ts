@@ -11,6 +11,7 @@ export interface Service {
   status: "up" | "degraded" | "down" | "unknown";
   last_check: string | null;
   response_time: number | null;
+  domain: string | null;
 }
 
 // ── DNS ─────────────────────────────────────────────────────────────────────
@@ -34,6 +35,14 @@ export interface TlsCert {
   fingerprint: string;
   algorithm: string;
   status: "valid" | "expiring" | "expired" | "revoked";
+  pem?: string;
+}
+
+export interface CaInfo {
+  issuer: string;
+  not_after: string;
+  algorithm: string | null;
+  fingerprint: string | null;
 }
 
 // ── Servers ─────────────────────────────────────────────────────────────────
@@ -43,10 +52,13 @@ export interface ServerStats {
   name: string;
   host: string;
   cpu_percent: number;
+  cpu_cores: number | null;
   memory_used: number;
   memory_total: number;
+  memory_percent: number;
   disk_used: number;
   disk_total: number;
+  disk_percent: number;
   uptime: string;
   gpus: GpuInfo[];
   containers: ContainerInfo[];
@@ -61,6 +73,7 @@ export interface GpuInfo {
   utilization: number;
   memory_used: number;
   memory_total: number;
+  memory_percent: number;
   power_draw: number;
   power_limit: number;
 }

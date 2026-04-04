@@ -49,7 +49,7 @@ export default function ServicesView() {
   });
 
   const healthCheckMut = useMutation({
-    mutationFn: (name: string) => servicesApi.healthCheck(name),
+    mutationFn: (name: string) => servicesApi.health(name),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["services"] });
     },
@@ -152,7 +152,7 @@ export default function ServicesView() {
               >
                 {/* Name + status */}
                 <div className="mb-3 flex items-center gap-2.5">
-                  <HealthDot status={svc.health_status} size="sm" />
+                  <HealthDot status={svc.status === "unknown" ? undefined : svc.status} size="sm" />
                   <h3 className="truncate text-[15px] font-semibold text-text-1">
                     {svc.name}
                   </h3>
@@ -190,10 +190,10 @@ export default function ServicesView() {
                       <span className="font-mono">{svc.response_time}ms</span>
                     </p>
                   )}
-                  {svc.last_health_check && (
+                  {svc.last_check && (
                     <p>
                       <span className="text-text-muted">Last check: </span>
-                      {timeSince(svc.last_health_check)}
+                      {timeSince(svc.last_check)}
                     </p>
                   )}
                 </div>

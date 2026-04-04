@@ -7,16 +7,16 @@ import { SlideOver } from "@/components/shared/slide-over";
 import { CopyButton } from "@/components/shared/copy-button";
 import { useToast } from "@/components/shared/toast";
 import { cn } from "@/lib/cn";
-import type { Certificate, CaInfo } from "@/lib/types";
+import type { TlsCert, CaInfo } from "@/lib/types";
 
 export default function TlsView() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const [inspecting, setInspecting] = useState<Certificate | null>(null);
+  const [inspecting, setInspecting] = useState<TlsCert | null>(null);
 
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ["tls-certs"],
-    queryFn: tlsApi.listCerts,
+    queryFn: tlsApi.list,
     refetchInterval: 15_000,
   });
 
@@ -25,21 +25,21 @@ export default function TlsView() {
     queryFn: tlsApi.getCaInfo,
   });
 
-  const certs = data?.certificates ?? [];
+  const certs = data?.certs ?? [];
   const ca: CaInfo | null = caData?.ca ?? null;
 
-  const validCount = certs.filter((c) => c.status === "valid").length;
-  const expiringCount = certs.filter((c) => c.status === "expiring").length;
-  const expiredCount = certs.filter((c) => c.status === "expired").length;
+  const validCount = certs.filter((c: TlsCert) => c.status === "valid").length;
+  const expiringCount = certs.filter((c: TlsCert) => c.status === "expiring").length;
+  const expiredCount = certs.filter((c: TlsCert) => c.status === "expired").length;
 
   const trustCaMut = useMutation({
-    mutationFn: () => tlsApi.trustCa(),
+    mutationFn: () => tlsApi.trust(),
     onSuccess: () => toast("CA certificate trusted in system store"),
     onError: (e: Error) => toast(e.message, "error"),
   });
 
   const rotateMut = useMutation({
-    mutationFn: (name: string) => tlsApi.rotateCert(name),
+    mutationFn: (name: string) => tlsApi.rotate(name),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tls-certs"] });
       toast("Certificate rotated");
@@ -53,7 +53,7 @@ export default function TlsView() {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="mb-1 text-xl font-bold">TLS Certificates</h1>
+            <h1 className="mb-1 text-xl font-bold">TLS TlsCerts</h1>
             <p className="text-sm text-text-3">
               Internal CA and service certificate management
             </p>
@@ -131,23 +131,23 @@ export default function TlsView() {
           <EmptyState
             icon={<Shield size={40} />}
             title="No certificates issued"
-            description="Certificates are issued automatically when you register a TLS-enabled service."
+            description="TlsCerts are issued automatically when you register a TLS-enabled service."
             className="py-16"
           />
         )}
 
-        {/* Certificate grid */}
+        {/* TlsCert grid */}
         {!isPending && !isError && certs.length > 0 && (
           <div
             className="grid gap-3"
             style={{ gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))" }}
           >
-            {certs.map((cert) => (
+            {certs.map((cert: TlsCert) => (
               <CertCard
-                key={cert.service}
+                key={cert.name}
                 cert={cert}
                 onInspect={() => setInspecting(cert)}
-                onRotate={() => rotateMut.mutate(cert.service)}
+                onRotate={() => rotateMut.mutate(cert.name)}
                 rotating={rotateMut.isPending}
               />
             ))}
@@ -159,7 +159,7 @@ export default function TlsView() {
       <SlideOver
         open={inspecting !== null}
         onClose={() => setInspecting(null)}
-        title={inspecting ? `Certificate: ${inspecting.service}` : "Certificate Details"}
+        title={inspecting ? `Certificate: ${inspecting.name}` : "Certificate Details"}
       >
         {inspecting && <CertDetails cert={inspecting} />}
       </SlideOver>
@@ -173,7 +173,7 @@ function CertCard({
   onRotate,
   rotating,
 }: {
-  cert: Certificate;
+  cert: TlsCert;
   onInspect: () => void;
   onRotate: () => void;
   rotating: boolean;
@@ -188,7 +188,7 @@ function CertCard({
     <div className="group rounded-xl border border-border bg-surface-1 p-4 transition-colors hover:border-surface-4">
       <div className="mb-3 flex items-center gap-2.5">
         <h3 className="truncate text-[15px] font-semibold text-text-1">
-          {cert.service}
+          {cert.name}
         </h3>
         <span
           className={cn(
@@ -245,10 +245,10 @@ function CertCard({
   );
 }
 
-function CertDetails({ cert }: { cert: Certificate }) {
+function CertDetails({ cert }: { cert: TlsCert }) {
   return (
     <div className="space-y-4">
-      <DetailRow label="Service" value={cert.service} />
+      <DetailRow label="Service" value={cert.name} />
       <DetailRow label="Domain" value={cert.domain} mono />
       <DetailRow label="Status" value={cert.status} />
       <DetailRow label="Not Before" value={cert.not_before} />
