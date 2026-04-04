@@ -53,3 +53,4 @@ test_results/
 # Log files
 *.log
 logs/
+ui/node_modules/
