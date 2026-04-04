@@ -135,8 +135,24 @@ ensure_config_dir() {
 load_env() {
     local env_file="${CONDUIT_ENV_FILE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/.env.conduit}"
     if [[ -f "$env_file" ]]; then
-        # shellcheck disable=SC1090
-        source "$env_file"
+        local key value
+        while IFS='=' read -r key value; do
+            # Skip comments and empty lines
+            [[ "$key" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "$key" ]] && continue
+            # Strip leading/trailing whitespace
+            key="${key#"${key%%[![:space:]]*}"}"
+            key="${key%"${key##*[![:space:]]}"}"
+            value="${value#"${value%%[![:space:]]*}"}"
+            value="${value%"${value##*[![:space:]]}"}"
+            # Strip surrounding quotes from value
+            value="${value#\"}"
+            value="${value%\"}"
+            # Only export known CONDUIT_ prefixed variables
+            if [[ "$key" =~ ^CONDUIT_ ]]; then
+                export "$key=$value"
+            fi
+        done < "$env_file"
     fi
 }
 

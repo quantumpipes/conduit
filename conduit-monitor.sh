@@ -52,6 +52,14 @@ for arg in "$@"; do
     esac
 done
 
+# Validate SSH host if provided (prevent command injection)
+if [[ -n "$SSH_HOST" ]]; then
+    if ! [[ "$SSH_HOST" =~ ^[a-zA-Z0-9@._-]+$ ]]; then
+        log_error "Invalid server address: $SSH_HOST"
+        exit 1
+    fi
+fi
+
 # ---------------------------------------------------------------------------
 # Helper: run command locally or via SSH
 # ---------------------------------------------------------------------------
@@ -59,7 +67,7 @@ _run() {
     if [[ -n "$SSH_HOST" ]]; then
         ssh -o ConnectTimeout=5 -o BatchMode=yes "$SSH_HOST" "$@" 2>/dev/null
     else
-        bash -c "$*" 2>/dev/null
+        "$@" 2>/dev/null
     fi
 }
 

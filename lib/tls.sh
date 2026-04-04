@@ -79,7 +79,7 @@ tls_issue_cert() {
     fi
 
     # Generate private key
-    openssl genrsa -out "${cert_dir}/key.pem" 2048 2>/dev/null
+    openssl genpkey -algorithm ED25519 -out "${cert_dir}/key.pem" 2>/dev/null
     chmod 600 "${cert_dir}/key.pem"
 
     # Generate CSR

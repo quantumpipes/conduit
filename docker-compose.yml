@@ -21,13 +21,12 @@ services:
       - ./conduit-preflight.sh:/app/conduit-preflight.sh
       - ./lib:/app/lib
       - ./templates:/app/templates
-      - ${CONDUIT_CONFIG_DIR:-~/.config/qp-conduit}:/root/.config/qp-conduit
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONDUIT_CONFIG_DIR:-~/.config/qp-conduit}:/home/conduit/.config/qp-conduit
     environment:
       - CONDUIT_APP_NAME=${CONDUIT_APP_NAME:-qp-conduit}
-      - CONDUIT_CONFIG_DIR=/root/.config/qp-conduit
+      - CONDUIT_CONFIG_DIR=/home/conduit/.config/qp-conduit
       - CONDUIT_CADDY_ADMIN=${CONDUIT_CADDY_ADMIN:-host.docker.internal:2019}
-      - CONDUIT_DOCKER_SOCKET=/var/run/docker.sock
+      - CONDUIT_API_KEY=${CONDUIT_API_KEY:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped

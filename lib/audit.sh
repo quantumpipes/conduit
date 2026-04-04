@@ -105,25 +105,10 @@ _ensure_capsule() {
         return 0
     fi
 
-    log_info "qp-capsule CLI not found. Attempting to install via pip..."
-
-    local pip_cmd=""
-    if command -v pip3 &>/dev/null; then
-        pip_cmd="pip3"
-    elif command -v pip &>/dev/null; then
-        pip_cmd="pip"
-    else
-        log_warn "pip not found. Cannot auto-install qp-capsule."
-        return 1
-    fi
-
-    if "$pip_cmd" install --quiet qp-capsule 2>/dev/null; then
-        log_success "Installed qp-capsule CLI"
-        return 0
-    else
-        log_warn "Failed to install qp-capsule via pip."
-        return 1
-    fi
+    # Do not auto-install from PyPI (supply chain risk, air-gap violation).
+    # Pre-install qp-capsule in the Docker image or on the host.
+    log_warn "qp-capsule not found. Install with: pip install qp-capsule"
+    return 1
 }
 
 # ---------------------------------------------------------------------------
