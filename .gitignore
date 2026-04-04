@@ -1,0 +1,55 @@
+# QP Conduit - .gitignore
+
+# Environment files (contain configuration secrets)
+.env.conduit
+.env
+
+# TLS certificates and keys (generated locally)
+certs/
+*.crt
+*.key
+*.pem
+*.csr
+
+# Caddy data and config (runtime state)
+caddy_data/
+caddy_config/
+*.caddy.lock
+
+# dnsmasq state
+dnsmasq.d/
+dnsmasq.leases
+*.pid
+
+# Monitoring state
+state/
+metrics/
+
+# Docker socket mounts
+docker.sock
+
+# Backup files
+*.bak
+*.orig
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Test artifacts
+/tmp/
+*.tmp
+
+# bats test output
+test_results/
+
+# Log files
+*.log
+logs/

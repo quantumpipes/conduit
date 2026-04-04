@@ -1,0 +1,13 @@
+QP Conduit
+Copyright 2026 Quantum Pipes Technologies, LLC
+
+Licensed under the Apache License, Version 2.0.
+
+This product includes software developed by Quantum Pipes Technologies, LLC.
+https://quantumpipes.com
+
+Third-party dependencies:
+- Caddy (https://caddyserver.com/) - Apache-2.0
+- dnsmasq (https://dnsmasq.org/) - GPL-2.0
+- jq (https://stedolan.github.io/jq/) - MIT
+- bats-core (https://github.com/bats-core/bats-core) - MIT (testing only)
