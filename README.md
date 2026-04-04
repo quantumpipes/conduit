@@ -9,6 +9,7 @@ Tunnel gets you in. Conduit connects everything inside. Automatic DNS, internal 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Crypto](https://img.shields.io/badge/Crypto-Internal_CA_%2B_TLS_1.3-purple.svg)](#security)
 [![Capsule](https://img.shields.io/badge/Audit-Capsule_Protocol-orange.svg)](https://github.com/quantumpipes/capsule)
+[![Admin UI](https://img.shields.io/badge/UI-React_19_%2B_OKLCH-ff69b4.svg)](#admin-dashboard)
 
 </div>
 
@@ -277,6 +278,43 @@ The JSON audit log is the fast local index. Capsules are the cryptographic sourc
 
 ---
 
+## Admin Dashboard
+
+Conduit includes a browser-based admin UI for managing your entire on-premises infrastructure visually.
+
+```bash
+make ui-install    # First time: install dependencies
+make ui            # Start the dashboard (http://localhost:5173)
+```
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  QP Conduit                                                         │
+├──────────┬───────────────────────────────────────────────────────────┤
+│          │  Services    4 up  ·  0 degraded  ·  0 down              │
+│ Overview │                                                          │
+│ ┌──────┐ │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
+│ │Dashbd│ │  │ Hub          │  │ Core API     │  │ Grafana      │   │
+│ ├──────┤ │  │ ● hub.local  │  │ ● api.local  │  │ ● grafana    │   │
+│ │Svc   │ │  │ :4200  TLS ✓ │  │ :8000  TLS ✓ │  │ .internal    │   │
+│ │DNS   │ │  │ 12ms healthy │  │ 8ms  healthy │  │ 15ms healthy │   │
+│ │TLS   │ │  └──────────────┘  └──────────────┘  └──────────────┘   │
+│ ├──────┤ │                                                          │
+│ │Server│ │  GPU Server (10.0.1.20)                                  │
+│ │Route │ │  GPU 0: H200  87%  ███████░░  72/141 GB  62°C           │
+│ └──────┘ │  GPU 1: H200  43%  ████░░░░░  31/141 GB  58°C           │
+│          │  CPU: 24/48   Mem: 189/256 GB   Disk: 1.2/3.8 TB        │
+└──────────┴───────────────────────────────────────────────────────────┘
+```
+
+**Six views**: Dashboard (health overview), Services (register/manage), DNS (entries + resolver), TLS (certificates + CA), Servers (GPU/CPU/memory), Routing (proxy routes).
+
+**Tech**: React 19, TypeScript, Vite, TailwindCSS 4 with OKLCH perceptual color system, Zustand, TanStack Query. Dark theme with 6-level surface hierarchy.
+
+**Keyboard-first**: `1-6` switches views, `/` focuses search, `Esc` dismisses panels.
+
+---
+
 ## Security
 
 | Layer | Mechanism |
@@ -357,10 +395,8 @@ All values are overridable via environment variables or `.env.conduit`.
 |----------|----------|
 | [Architecture](./docs/architecture.md) | Developers, Auditors |
 | [Security Evaluation](./docs/security.md) | CISOs, Security Teams |
+| [Why Conduit](./docs/why-conduit.md) | Decision-Makers, Architects |
 | [Compliance Mappings](./docs/compliance/) | Regulators, GRC |
-| [Internal TLS](./docs/internal-tls.md) | Network Engineers |
-| [Monitoring](./docs/monitoring.md) | DevOps, SREs |
-| [Narrative Guide](./docs/GUIDE.md) | New Users |
 
 ### Examples
 
@@ -384,13 +420,20 @@ All values are overridable via environment variables or `.env.conduit`.
 │   ├── audit.sh                 # Structured audit logging + Capsule sealing
 │   ├── dns.sh                   # dnsmasq configuration and management
 │   ├── tls.sh                   # Caddy CA and certificate operations
-│   ├── routing.sh               # Reverse proxy route management
-│   └── monitor.sh               # Hardware and container monitoring
+│   └── routing.sh               # Reverse proxy route management
+├── ui/                          # Admin dashboard (React 19 + TypeScript)
+│   └── src/
+│       ├── components/views/    # 6 views (dashboard, services, dns, tls, servers, routing)
+│       ├── components/layout/   # AppShell, Sidebar, StatusBar
+│       ├── components/shared/   # HealthDot, StatCard, Chip, SlideOver, Toast
+│       ├── api/                 # Typed API client modules
+│       ├── stores/              # Zustand state management
+│       └── lib/                 # Types, utilities, OKLCH theme
 ├── templates/
-│   └── Caddyfile.conduit.tpl    # Caddy configuration template
+│   └── Caddyfile.service.tpl    # Per-service Caddy configuration template
 ├── conformance/                 # Audit log golden test vectors
 ├── completions/                 # Bash and Zsh tab-completion scripts
-├── tests/                       # Unit, integration, and smoke tests
+├── tests/                       # Unit, integration, and smoke tests (bats-core)
 ├── docs/                        # Architecture, security, compliance, guides
 ├── examples/                    # Deployment walkthroughs
 ├── .env.conduit.example         # Configuration template
