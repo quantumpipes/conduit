@@ -319,12 +319,20 @@ def get_audit(limit: int = Query(50, ge=1, le=500)):
 # ---------------------------------------------------------------------------
 
 UI_DIST = HERE / "ui" / "dist"
+UI_ASSETS = UI_DIST / "assets"
+
+if UI_ASSETS.exists():
+    app.mount("/assets", StaticFiles(directory=str(UI_ASSETS)), name="assets")
 
 if UI_DIST.exists():
-    app.mount("/assets", StaticFiles(directory=str(UI_DIST / "assets")), name="assets")
 
     @app.get("/{path:path}")
     def spa_fallback(path: str):
+        # Serve specific files from dist (e.g., vite.svg, favicon)
+        file_path = UI_DIST / path
+        if path and file_path.exists() and file_path.is_file():
+            return HTMLResponse(file_path.read_bytes())
+        # SPA fallback: serve index.html for all routes
         index = UI_DIST / "index.html"
         if index.exists():
             return HTMLResponse(index.read_text())
