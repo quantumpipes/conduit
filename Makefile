@@ -101,10 +101,34 @@ conduit-verify: ## Verify Capsule audit chain integrity
 	@bash -c 'source $(CONDUIT_DIR)/conduit-preflight.sh && qp-capsule verify'
 
 # ---------------------------------------------------------------------------
-# Admin UI
+# Docker (recommended)
+# ---------------------------------------------------------------------------
+.PHONY: dev
+dev: ## Start Conduit dashboard in Docker (http://localhost:9999)
+	@docker compose -f $(CONDUIT_DIR)/docker-compose.yml up --build -d
+	@docker compose -f $(CONDUIT_DIR)/docker-compose.yml logs -f
+
+.PHONY: go
+go: ## Start Conduit in Docker (background)
+	@docker compose -f $(CONDUIT_DIR)/docker-compose.yml up --build -d
+
+.PHONY: stop
+stop: ## Stop Conduit containers
+	@docker compose -f $(CONDUIT_DIR)/docker-compose.yml down
+
+.PHONY: logs
+logs: ## Tail Conduit container logs
+	@docker compose -f $(CONDUIT_DIR)/docker-compose.yml logs -f
+
+.PHONY: refresh
+refresh: ## Rebuild and restart the app container
+	@docker compose -f $(CONDUIT_DIR)/docker-compose.yml up --build -d app
+
+# ---------------------------------------------------------------------------
+# Admin UI (native, for development)
 # ---------------------------------------------------------------------------
 .PHONY: ui
-ui: ## Start the admin dashboard (dev mode, port 5173)
+ui: ## Start the admin dashboard natively (dev mode, port 5173)
 	@cd $(UI_DIR) && npm run dev
 
 .PHONY: ui-build

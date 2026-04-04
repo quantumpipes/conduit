@@ -1,0 +1,34 @@
+# QP Conduit — On-Premises Infrastructure Dashboard
+# Usage: docker compose up -d
+# Dashboard: http://localhost:9999
+name: qp-conduit
+
+services:
+  app:
+    build: .
+    container_name: qp-conduit
+    ports:
+      - "9999:9999"
+    volumes:
+      - ./server.py:/app/server.py
+      - ./ui/dist:/app/ui/dist:ro
+      - ./conduit-setup.sh:/app/conduit-setup.sh
+      - ./conduit-register.sh:/app/conduit-register.sh
+      - ./conduit-deregister.sh:/app/conduit-deregister.sh
+      - ./conduit-status.sh:/app/conduit-status.sh
+      - ./conduit-monitor.sh:/app/conduit-monitor.sh
+      - ./conduit-certs.sh:/app/conduit-certs.sh
+      - ./conduit-dns.sh:/app/conduit-dns.sh
+      - ./conduit-preflight.sh:/app/conduit-preflight.sh
+      - ./lib:/app/lib
+      - ./templates:/app/templates
+      - ${CONDUIT_CONFIG_DIR:-~/.config/qp-conduit}:/root/.config/qp-conduit
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CONDUIT_APP_NAME=${CONDUIT_APP_NAME:-qp-conduit}
+      - CONDUIT_CONFIG_DIR=/root/.config/qp-conduit
+      - CONDUIT_CADDY_ADMIN=${CONDUIT_CADDY_ADMIN:-host.docker.internal:2019}
+      - CONDUIT_DOCKER_SOCKET=/var/run/docker.sock
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
