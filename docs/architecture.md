@@ -490,5 +490,10 @@ Both Tunnel and Conduit share the same audit log format and Capsule Protocol int
 
 ## Related Documentation
 
-- [Why QP Conduit](./why-conduit.md) -- Business case and comparison positioning
-- [Security Evaluation](./security.md) -- Cryptographic inventory and threat model for CISOs
+- [Guide](./GUIDE.md): Getting started walkthrough for new users
+- [Why QP Conduit](./why-conduit.md): Business case and comparison positioning
+- [Security Evaluation](./security.md): Cryptographic inventory and threat model for CISOs
+- [Commands Reference](./COMMANDS.md): Detailed reference for all 8 scripts
+- [API Reference](./API.md): REST API documentation for server.py
+- [Network Guide](./NETWORK-GUIDE.md): DNS and TLS trust configuration
+- [Deployment](./DEPLOYMENT.md): Docker, air-gap, and multi-server deployment

@@ -1,0 +1,273 @@
+{
+  "version": "1.0.0",
+  "description": "Golden test vectors for QP Conduit JSONL audit log format",
+  "fixtures": [
+    {
+      "description": "Conduit setup with dnsmasq and Caddy (success)",
+      "entry": {
+        "timestamp": "2026-04-04T10:00:00Z",
+        "action": "conduit_setup",
+        "status": "success",
+        "message": "Conduit initialized: dnsmasq, Caddy, internal CA",
+        "user": "admin",
+        "details": {
+          "domain": "qp.local",
+          "dns": "dnsmasq",
+          "proxy": "caddy",
+          "ca": "ed25519"
+        }
+      },
+      "valid": true
+    },
+    {
+      "description": "Service registered with TLS enabled (success)",
+      "entry": {
+        "timestamp": "2026-04-04T10:15:00Z",
+        "action": "service_register",
+        "status": "success",
+        "message": "Registered service: hub (127.0.0.1:8090)",
+        "user": "admin",
+        "details": {
+          "name": "hub",
+          "host": "127.0.0.1",
+          "port": "8090",
+          "protocol": "https",
+          "health_path": "/healthz",
+          "tls": true
+        }
+      },
+      "valid": true
+    },
+    {
+      "description": "Service deregistered and archived (success)",
+      "entry": {
+        "timestamp": "2026-04-04T18:30:00Z",
+        "action": "service_deregister",
+        "status": "success",
+        "message": "Deregistered service: grafana",
+        "user": "admin",
+        "details": {
+          "name": "grafana"
+        }
+      },
+      "valid": true
+    },
+    {
+      "description": "Certificate rotated for a service (success)",
+      "entry": {
+        "timestamp": "2026-04-04T12:00:00Z",
+        "action": "cert_rotate",
+        "status": "success",
+        "message": "Certificate rotated for service: core",
+        "user": "admin",
+        "details": {
+          "name": "core"
+        }
+      },
+      "valid": true
+    },
+    {
+      "description": "DNS entry added during registration (success)",
+      "entry": {
+        "timestamp": "2026-04-04T10:14:55Z",
+        "action": "dns_add",
+        "status": "success",
+        "message": "DNS entry added: hub.qp.local -> 127.0.0.1",
+        "user": "admin",
+        "details": {
+          "name": "hub",
+          "host": "127.0.0.1"
+        }
+      },
+      "valid": true
+    },
+    {
+      "description": "DNS entry removed during deregistration (success)",
+      "entry": {
+        "timestamp": "2026-04-04T18:29:50Z",
+        "action": "dns_remove",
+        "status": "success",
+        "message": "DNS entry removed: grafana.qp.local",
+        "user": "admin",
+        "details": {
+          "name": "grafana"
+        }
+      },
+      "valid": true
+    },
+    {
+      "description": "DNS cache flushed (success)",
+      "entry": {
+        "timestamp": "2026-04-04T14:00:00Z",
+        "action": "dns_flush",
+        "status": "success",
+        "message": "DNS cache flushed",
+        "user": "operator",
+        "details": {}
+      },
+      "valid": true
+    },
+    {
+      "description": "Health change from healthy to down (success)",
+      "entry": {
+        "timestamp": "2026-04-04T14:30:00Z",
+        "action": "health_change",
+        "status": "success",
+        "message": "Service core health changed: healthy -> down",
+        "user": "admin",
+        "details": {
+          "name": "core",
+          "previous": "healthy",
+          "current": "down",
+          "checked_at": "2026-04-04T14:30:00Z"
+        }
+      },
+      "valid": true
+    },
+    {
+      "description": "Health change from down to healthy (success)",
+      "entry": {
+        "timestamp": "2026-04-04T14:35:00Z",
+        "action": "health_change",
+        "status": "success",
+        "message": "Service core health changed: down -> healthy",
+        "user": "admin",
+        "details": {
+          "name": "core",
+          "previous": "down",
+          "current": "healthy",
+          "checked_at": "2026-04-04T14:35:00Z"
+        }
+      },
+      "valid": true
+    },
+    {
+      "description": "GPU temperature monitor alert (success)",
+      "entry": {
+        "timestamp": "2026-04-04T15:10:00Z",
+        "action": "monitor_alert",
+        "status": "success",
+        "message": "GPU 0 temperature 92C exceeds threshold 85C",
+        "user": "admin",
+        "details": {
+          "metric": "gpu_temperature",
+          "value": 92,
+          "threshold": 85,
+          "unit": "celsius",
+          "gpu_index": 0
+        }
+      },
+      "valid": true
+    },
+    {
+      "description": "ERR trap fired during service registration (failure)",
+      "entry": {
+        "timestamp": "2026-04-04T11:22:10Z",
+        "action": "conduit-register_error",
+        "status": "failure",
+        "message": "ERR trap fired at line 74",
+        "user": "operator",
+        "details": {
+          "line": "74",
+          "script": "conduit-register"
+        }
+      },
+      "valid": true
+    },
+    {
+      "description": "Capsule-sealed entry with seal envelope",
+      "entry": {
+        "timestamp": "2026-04-04T10:15:00Z",
+        "action": "service_register",
+        "status": "success",
+        "message": "Registered service: ollama (127.0.0.1:11434)",
+        "user": "admin",
+        "details": {
+          "name": "ollama",
+          "host": "127.0.0.1",
+          "port": "11434",
+          "protocol": "https",
+          "health_path": "/api/tags",
+          "tls": true
+        }
+      },
+      "valid": true,
+      "capsule_seal": {
+        "hash_algorithm": "sha3-256",
+        "content_hash": "4a2c8f1e3b5d7a9c0e2f4b6d8a1c3e5f7b9d0a2c4e6f8a1b3d5e7f9a0c2e4f",
+        "signature_algorithm": "ed25519",
+        "signature": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+        "public_key": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa3f4a18446b7e8c5e7a1b2",
+        "sequence": 2,
+        "previous_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "description": "INVALID: missing timestamp field",
+      "entry": {
+        "action": "service_register",
+        "status": "success",
+        "message": "Registered service: redis (127.0.0.1:6379)",
+        "user": "operator",
+        "details": {
+          "name": "redis",
+          "host": "127.0.0.1",
+          "port": "6379",
+          "protocol": "https",
+          "health_path": "/healthz",
+          "tls": true
+        }
+      },
+      "valid": false
+    },
+    {
+      "description": "INVALID: missing action field",
+      "entry": {
+        "timestamp": "2026-04-04T12:00:00Z",
+        "status": "success",
+        "message": "Something happened",
+        "user": "operator",
+        "details": {}
+      },
+      "valid": false
+    },
+    {
+      "description": "INVALID: status is not success or failure",
+      "entry": {
+        "timestamp": "2026-04-04T12:00:00Z",
+        "action": "service_register",
+        "status": "pending",
+        "message": "Registered service: test",
+        "user": "operator",
+        "details": {
+          "name": "test"
+        }
+      },
+      "valid": false
+    },
+    {
+      "description": "INVALID: details is null instead of an object",
+      "entry": {
+        "timestamp": "2026-04-04T12:00:00Z",
+        "action": "dns_flush",
+        "status": "success",
+        "message": "DNS cache flushed",
+        "user": "operator",
+        "details": null
+      },
+      "valid": false
+    },
+    {
+      "description": "INVALID: timestamp is not ISO 8601 UTC",
+      "entry": {
+        "timestamp": "April 4, 2026 2:00 PM",
+        "action": "conduit_setup",
+        "status": "success",
+        "message": "Conduit initialized",
+        "user": "root",
+        "details": {}
+      },
+      "valid": false
+    }
+  ]
+}
