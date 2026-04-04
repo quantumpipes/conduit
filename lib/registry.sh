@@ -107,23 +107,30 @@ registry_add_service() {
 
     local now
     now="$(ts_iso)"
-    local tmp="${path}.tmp.$$"
-    jq --arg n "$name" --arg h "$host" --arg p "$port" \
-       --arg proto "$protocol" --arg hp "$health_path" --arg ts "$now" \
-       '.services += [{
-         "name": $n,
-         "host": $h,
-         "port": ($p | tonumber),
-         "protocol": $proto,
-         "health_path": $hp,
-         "status": "active",
-         "health_status": "unknown",
-         "last_health_check": null,
-         "registered_at": $ts,
-         "deregistered_at": null
-       }]' \
-       "$path" > "$tmp"
-    mv "$tmp" "$path"
+
+    # Atomic read-check-write under file lock to prevent race conditions
+    (
+        flock -x 200 || { log_error "Failed to acquire registry lock"; return 1; }
+
+        local tmp="${path}.tmp.$$"
+        jq --arg n "$name" --arg h "$host" --arg p "$port" \
+           --arg proto "$protocol" --arg hp "$health_path" --arg ts "$now" \
+           '.services += [{
+             "name": $n,
+             "host": $h,
+             "port": ($p | tonumber),
+             "protocol": $proto,
+             "health_path": $hp,
+             "status": "active",
+             "health_status": "unknown",
+             "last_health_check": null,
+             "registered_at": $ts,
+             "deregistered_at": null
+           }]' \
+           "$path" > "$tmp"
+        mv "$tmp" "$path"
+    ) 200>"${path}.lock"
+
     log_info "Service added: $name ($host:$port)"
 }
 

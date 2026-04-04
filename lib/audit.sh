@@ -36,6 +36,13 @@ audit_log() {
     config_dir="$(ensure_config_dir)"
     local log_file="${config_dir}/audit.log"
 
+    # Ensure log file exists with restrictive permissions
+    if [[ ! -f "$log_file" ]]; then
+        set_safe_umask
+        touch "$log_file"
+        chmod 600 "$log_file"
+    fi
+
     local timestamp
     timestamp="$(ts_iso)"
     local user
@@ -57,8 +64,11 @@ audit_log() {
         '{"timestamp":$ts,"action":$act,"status":$st,"message":$msg,"user":$usr,"details":$det}'
     )"
 
-    # Append atomically (single write)
-    printf '%s\n' "$entry" >> "$log_file"
+    # Append under file lock to prevent interleaved writes
+    (
+        flock -x 200 || true
+        printf '%s\n' "$entry" >> "$log_file"
+    ) 200>"${log_file}.lock"
 
     # Seal as tamper-evident Capsule
     _capsule_seal "$entry"

@@ -97,3 +97,33 @@ jobs:
 
       - name: Run integration tests
         run: bats tests/integration/
+
+  # ==========================================================================
+  # SECURITY AUDIT (dependency scanning)
+  # ==========================================================================
+  security:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Audit Python dependencies
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Audit npm dependencies
+        run: |
+          cd ui
+          npm ci
+          npm audit --audit-level=high

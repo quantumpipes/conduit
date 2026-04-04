@@ -11,9 +11,11 @@ import json
 import os
 import re
 import subprocess
+import time
+from collections import defaultdict
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -108,6 +110,40 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["X-API-Key", "Content-Type"],
 )
+
+
+# ---------------------------------------------------------------------------
+# Rate limiting (simple in-memory, no external dependency)
+# ---------------------------------------------------------------------------
+
+_rate_buckets: dict[str, list[float]] = defaultdict(list)
+RATE_LIMIT = int(os.environ.get("CONDUIT_RATE_LIMIT", "60"))  # requests per minute
+RATE_WINDOW = 60.0  # seconds
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Simple per-IP rate limiter. Skips for /api/ping and static assets."""
+    path = request.url.path
+    if path.startswith("/assets") or path == "/api/ping":
+        return await call_next(request)
+
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.monotonic()
+
+    # Prune old entries
+    bucket = _rate_buckets[client_ip]
+    _rate_buckets[client_ip] = [t for t in bucket if now - t < RATE_WINDOW]
+
+    if len(_rate_buckets[client_ip]) >= RATE_LIMIT:
+        return JSONResponse(
+            {"error": "Rate limit exceeded. Try again later."},
+            status_code=429,
+            headers={"Retry-After": "60"},
+        )
+
+    _rate_buckets[client_ip].append(now)
+    return await call_next(request)
 
 
 # ---------------------------------------------------------------------------

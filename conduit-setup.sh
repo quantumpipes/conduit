@@ -68,17 +68,8 @@ done
 # ---------------------------------------------------------------------------
 # Header
 # ---------------------------------------------------------------------------
-echo ""
-echo "========================================"
-echo "  QP Conduit Setup"
-echo "========================================"
-echo ""
-echo "Domain:       ${CONDUIT_DOMAIN}"
-echo "DNS Port:     ${CONDUIT_DNS_PORT}"
-echo "Proxy Port:   ${CONDUIT_PROXY_PORT}"
-echo "Upstream DNS: ${CONDUIT_UPSTREAM_DNS}"
-echo "Config Dir:   ${CONDUIT_CONFIG_DIR}"
-echo ""
+log_info "Starting QP Conduit setup..."
+log_info "Domain: ${CONDUIT_DOMAIN}"
 
 # ---------------------------------------------------------------------------
 # Step 1: Ensure config directory

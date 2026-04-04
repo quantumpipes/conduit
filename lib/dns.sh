@@ -34,6 +34,12 @@ dns_add_entry() {
         return 1
     fi
 
+    # Validate IP address format (IPv4 only, no hostnames)
+    if ! [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        log_error "Invalid IP address: $ip (must be IPv4)"
+        return 1
+    fi
+
     local fqdn="${name}.${CONDUIT_DOMAIN:-qp.local}"
     local hosts_file
     hosts_file="$(_dns_hosts_file)"
