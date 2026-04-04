@@ -1,0 +1,203 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   QP CONDUIT — Design System
+   oklch palette for perceptually uniform dark theme.
+   Every color has a semantic purpose.
+   ============================================================================ */
+
+@theme {
+  /* --- Surface palette (6 levels of elevation) --- */
+  --color-surface-0: oklch(0.08 0.02 240);
+  --color-surface-1: oklch(0.12 0.025 240);
+  --color-surface-2: oklch(0.16 0.03 240);
+  --color-surface-3: oklch(0.2 0.035 240);
+  --color-surface-4: oklch(0.25 0.04 240);
+  --color-surface-5: oklch(0.3 0.04 240);
+
+  /* --- Text hierarchy --- */
+  --color-text-1: oklch(0.95 0.01 200);
+  --color-text-2: oklch(0.7 0.03 200);
+  --color-text-3: oklch(0.5 0.02 200);
+  --color-text-muted: oklch(0.35 0.02 200);
+
+  /* --- Border --- */
+  --color-border: oklch(0.2 0.04 200);
+
+  /* --- Brand --- */
+  --color-primary: oklch(0.55 0.14 230);
+  --color-accent: oklch(0.7 0.22 45);
+
+  /* --- Status --- */
+  --color-success: oklch(0.72 0.19 145);
+  --color-warning: oklch(0.8 0.18 86);
+  --color-error: oklch(0.64 0.24 25);
+  --color-info: oklch(0.62 0.21 260);
+
+  /* --- Service colors (hue rotation) --- */
+  --color-svc-dns: oklch(0.7 0.12 260);
+  --color-svc-tls: oklch(0.7 0.12 150);
+  --color-svc-routing: oklch(0.7 0.12 45);
+  --color-svc-monitor: oklch(0.7 0.12 200);
+  --color-svc-caddy: oklch(0.7 0.12 150);
+  --color-svc-dnsmasq: oklch(0.7 0.12 280);
+
+  /* --- Service backgrounds --- */
+  --color-svc-dns-bg: oklch(0.18 0.06 260);
+  --color-svc-tls-bg: oklch(0.18 0.06 150);
+  --color-svc-routing-bg: oklch(0.18 0.06 45);
+  --color-svc-monitor-bg: oklch(0.18 0.06 200);
+  --color-svc-caddy-bg: oklch(0.18 0.06 150);
+  --color-svc-dnsmasq-bg: oklch(0.18 0.06 280);
+
+  /* --- Level colors --- */
+  --color-lvl-error: oklch(0.81 0.11 20);
+  --color-lvl-error-bg: oklch(0.15 0.04 25);
+  --color-lvl-warning: oklch(0.93 0.13 95);
+  --color-lvl-warning-bg: oklch(0.15 0.04 80);
+  --color-lvl-info: oklch(0.81 0.11 252);
+  --color-lvl-info-bg: oklch(0.15 0.04 230);
+  --color-lvl-debug: oklch(0.5 0.02 200);
+  --color-lvl-debug-bg: oklch(0.15 0.02 200);
+
+  /* --- Tab active colors (per-section hue) --- */
+  --color-tab-services: oklch(0.16 0.05 230);
+  --color-tab-services-text: oklch(0.81 0.11 230);
+  --color-tab-dns: oklch(0.16 0.04 260);
+  --color-tab-dns-text: oklch(0.81 0.11 260);
+  --color-tab-tls: oklch(0.16 0.04 150);
+  --color-tab-tls-text: oklch(0.87 0.15 154);
+  --color-tab-servers: oklch(0.16 0.04 25);
+  --color-tab-servers-text: oklch(0.81 0.11 20);
+  --color-tab-routing: oklch(0.16 0.04 45);
+  --color-tab-routing-text: oklch(0.88 0.17 92);
+
+  /* --- Typography --- */
+  --font-family-sans: "Inter", system-ui, sans-serif;
+  --font-family-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+  /* --- Animations --- */
+  --animate-fade-in: fade-in 0.15s ease-out;
+  --animate-slide-up: slide-up 0.2s ease-out;
+  --animate-slide-in-right: slide-in-right 0.25s ease-out;
+  --animate-pulse-slow: pulse-slow 2s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(2px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes pulse-slow {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+/* ============================================================================
+   Base layer
+   ============================================================================ */
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    background: var(--color-surface-0);
+    color: var(--color-text-1);
+    font-family: var(--font-family-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    height: 100%;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.25 0.03 240);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.35 0.04 240);
+  }
+
+  ::selection {
+    background: oklch(0.35 0.1 230);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ============================================================================
+   Component layer
+   ============================================================================ */
+
+@layer components {
+  .log-line {
+    font-family: var(--font-family-mono);
+    font-size: 12px;
+    padding: 2px 12px;
+    line-height: 1.5;
+  }
+  .log-line:hover {
+    background: oklch(0.1 0.015 240);
+  }
+}
