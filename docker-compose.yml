@@ -11,7 +11,6 @@ services:
       - "9999:9999"
     volumes:
       - ./server.py:/app/server.py
-      - ./ui/dist:/app/ui/dist:ro
       - ./conduit-setup.sh:/app/conduit-setup.sh
       - ./conduit-register.sh:/app/conduit-register.sh
       - ./conduit-deregister.sh:/app/conduit-deregister.sh
