@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Globe, Eraser, Search } from "lucide-react";
 import { dnsApi } from "@/api/dns";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ViewBlankSlate } from "@/components/shared/view-blank-slate";
 import { CopyButton } from "@/components/shared/copy-button";
 import { useToast } from "@/components/shared/toast";
 import { cn } from "@/lib/cn";
@@ -140,11 +141,24 @@ export default function DnsView() {
 
         {/* Empty */}
         {!isPending && !isError && entries.length === 0 && (
-          <EmptyState
-            icon={<Globe size={40} />}
+          <ViewBlankSlate
+            icon={<Globe size={28} />}
             title="No DNS entries"
-            description="Register a service to automatically create DNS entries."
-            className="py-16"
+            tagline="Every service gets a name, automatically"
+            description="When you register a service, Conduit creates .internal DNS entries via dnsmasq. No IP addresses to remember. grafana.internal, prometheus.internal, your-app.internal."
+            features={[
+              { label: "Auto-Created", description: "DNS entries from service registry" },
+              { label: "Resolve Tester", description: "Verify lookups from this dashboard" },
+              { label: "Cache Flush", description: "Clear stale records instantly" },
+              { label: "Three Sources", description: "Conduit, static, and system entries" },
+            ]}
+            command="make conduit-register NAME=grafana HOST=10.0.1.50:3000"
+            commandLabel="DNS entries appear after registering a service"
+            actionLabel="Register a Service"
+            actionView="services"
+            color="text-tab-dns-text"
+            bgColor="bg-tab-dns"
+            accentBorder="border-tab-dns-text/20"
           />
         )}
 

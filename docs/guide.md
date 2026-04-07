@@ -9,9 +9,9 @@ ai_context: |
   operations. Prerequisites: bash 4+, jq, Caddy 2.10+, dnsmasq.
 related:
   - ./architecture.md
-  - ./COMMANDS.md
-  - ./API.md
-  - ./DEPLOYMENT.md
+  - ./commands.md
+  - ./api.md
+  - ./deployment.md
 ---
 
 # QP Conduit: The Complete Guide
@@ -252,14 +252,14 @@ make dev    # http://localhost:9999, with live logs
 make go     # Background mode
 ```
 
-The dashboard provides six views: Dashboard (global health overview), Services, DNS, TLS, Servers, and Routing. See [ADMIN-UI.md](./ADMIN-UI.md) for details.
+The dashboard provides six views: Dashboard (global health overview), Services, DNS, TLS, Servers, and Routing. See [ADMIN-UI.md](./admin-ui.md) for details.
 
 ---
 
 ## Related Documentation
 
-- [Commands Reference](./COMMANDS.md): Detailed reference for all 8 scripts
-- [API Reference](./API.md): REST API documentation for the admin server
+- [Commands Reference](./commands.md): Detailed reference for all 8 scripts
+- [API Reference](./api.md): REST API documentation for the admin server
 - [Architecture](./architecture.md): Technical design and system overview
-- [Deployment](./DEPLOYMENT.md): Docker, air-gap, and multi-server deployment guides
-- [Admin UI](./ADMIN-UI.md): Dashboard documentation
+- [Deployment](./deployment.md): Docker, air-gap, and multi-server deployment guides
+- [Admin UI](./admin-ui.md): Dashboard documentation

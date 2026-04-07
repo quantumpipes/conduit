@@ -8,9 +8,9 @@ ai_context: |
   Server runs on port 9999 via uvicorn. Wraps conduit-*.sh scripts and reads
   services.json + audit.log directly. SPA fallback serves the React admin UI.
 related:
-  - ./ADMIN-UI.md
-  - ./COMMANDS.md
-  - ./GUIDE.md
+  - ./admin-ui.md
+  - ./commands.md
+  - ./guide.md
 ---
 
 # REST API Reference
@@ -601,6 +601,6 @@ uvicorn server:app --host 0.0.0.0 --port 9999 --reload
 
 ## Related Documentation
 
-- [Admin UI](./ADMIN-UI.md): Dashboard that consumes this API
-- [Commands Reference](./COMMANDS.md): Shell scripts that the API wraps
-- [Guide](./GUIDE.md): Getting started walkthrough
+- [Admin UI](./admin-ui.md): Dashboard that consumes this API
+- [Commands Reference](./commands.md): Shell scripts that the API wraps
+- [Guide](./guide.md): Getting started walkthrough

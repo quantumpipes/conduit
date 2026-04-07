@@ -8,7 +8,7 @@ ai_context: |
   controls Conduit provides from controls requiring complementary solutions.
 related:
   - ../security.md
-  - ../CRYPTO-NOTICE.md
+  - ../crypto-notice.md
   - ../architecture.md
 ---
 
@@ -64,5 +64,5 @@ No deprecated algorithms: no SHA-1, MD5, RSA, DES, 3DES, RC4, or TLS < 1.3.
 ## Related Documentation
 
 - [Security Evaluation](../security.md): Full threat model and hardening checklist
-- [Crypto Notice](../CRYPTO-NOTICE.md): Cryptographic analysis
+- [Crypto Notice](../crypto-notice.md): Cryptographic analysis
 - [Architecture](../architecture.md): System design

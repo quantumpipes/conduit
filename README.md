@@ -9,6 +9,8 @@ Tunnel gets you in. Conduit connects everything inside. Automatic DNS, internal 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Crypto](https://img.shields.io/badge/Crypto-Internal_CA_%2B_TLS_1.3-purple.svg)](#security)
 [![Capsule](https://img.shields.io/badge/Audit-Capsule_Protocol-orange.svg)](https://github.com/quantumpipes/capsule)
+[![Tests](https://img.shields.io/badge/Tests-225_passing-brightgreen.svg)](#admin-dashboard)
+[![Coverage](https://img.shields.io/badge/Coverage-97%25-brightgreen.svg)](#admin-dashboard)
 [![Admin UI](https://img.shields.io/badge/UI-React_19_%2B_OKLCH-ff69b4.svg)](#admin-dashboard)
 
 </div>
@@ -283,15 +285,14 @@ The JSON audit log is the fast local index. Capsules are the cryptographic sourc
 Conduit includes a browser-based admin UI for managing your entire on-premises infrastructure visually.
 
 ```bash
-make ui-install    # First time: install dependencies
-make ui            # Start the dashboard (http://localhost:5173)
+make dev       # Start in Docker (http://localhost:9999)
+make ui        # UI dev mode with hot reload (http://localhost:5173)
 ```
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│  QP Conduit                                                         │
+│  QP Conduit            DNS ● Caddy ● 4/4 up ● 3 certs valid        │
 ├──────────┬───────────────────────────────────────────────────────────┤
-│          │  Services    4 up  ·  0 degraded  ·  0 down              │
 │ Overview │                                                          │
 │ ┌──────┐ │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
 │ │Dashbd│ │  │ Hub          │  │ Core API     │  │ Grafana      │   │
@@ -307,11 +308,17 @@ make ui            # Start the dashboard (http://localhost:5173)
 └──────────┴───────────────────────────────────────────────────────────┘
 ```
 
-**Six views**: Dashboard (health overview), Services (register/manage), DNS (entries + resolver), TLS (certificates + CA), Servers (GPU/CPU/memory), Routing (proxy routes).
+**URL routing.** Each view has a dedicated URL (`/`, `/services`, `/dns`, `/tls`, `/servers`, `/routing`). Deep links, bookmarks, and browser back/forward all work.
 
-**Tech**: React 19, TypeScript, Vite, TailwindCSS 4 with OKLCH perceptual color system, Zustand, TanStack Query. Dark theme with 6-level surface hierarchy.
+**Blank slate.** First-time users see an interactive topology visualization with animated data packets, capability cards, and step-by-step getting started guidance. It disappears automatically when you register your first service.
 
-**Keyboard-first**: `1-6` switches views, `/` focuses search, `Esc` dismisses panels.
+**Six views.** Dashboard (health overview), Services (register/manage), DNS (entries + resolver), TLS (certificates + CA), Servers (GPU/CPU/memory), Routing (proxy routes). Each view has a rich empty state with feature descriptions and CLI commands.
+
+**Tech.** React 19, TypeScript, Vite 6, TailwindCSS 4 (OKLCH perceptual color system), Zustand, TanStack Query. Node 24 + Python 3.14 in Docker. 225 tests, 97% coverage.
+
+**Keyboard-first.** `1-6` switches views, `/` focuses search, `Esc` dismisses panels.
+
+See [docs/admin-ui.md](./docs/admin-ui.md) for the full dashboard reference.
 
 ---
 
@@ -391,12 +398,19 @@ All values are overridable via environment variables or `.env.conduit`.
 
 ## Documentation
 
-| Document | Audience |
-|----------|----------|
-| [Architecture](./docs/architecture.md) | Developers, Auditors |
-| [Security Evaluation](./docs/security.md) | CISOs, Security Teams |
-| [Why Conduit](./docs/why-conduit.md) | Decision-Makers, Architects |
-| [Compliance Mappings](./docs/compliance/) | Regulators, GRC |
+| Document | Audience | Description |
+|----------|----------|-------------|
+| [Why Conduit](./docs/why-conduit.md) | Decision-Makers | The case for on-premises infrastructure mesh |
+| [Guide](./docs/guide.md) | Operators | End-to-end walkthrough |
+| [Architecture](./docs/architecture.md) | Developers, Auditors | Component model and data flow |
+| [Admin UI](./docs/admin-ui.md) | Developers | Dashboard: routing, blank slate, design system, testing |
+| [API Reference](./docs/api.md) | Developers | REST endpoints served by server.py |
+| [Commands](./docs/commands.md) | Operators | Reference for all 8 CLI scripts |
+| [Security Evaluation](./docs/security.md) | CISOs | Threat model and cryptographic guarantees |
+| [Network Guide](./docs/network-guide.md) | Network Engineers | DNS, TLS trust, air-gap configuration |
+| [Development](./docs/development.md) | Contributors | Prerequisites, testing, code style |
+| [Deployment](./docs/deployment.md) | DevOps | Docker, air-gap, multi-server |
+| [Compliance](./docs/compliance/) | Regulators, GRC | HIPAA, CMMC, FedRAMP, SOC 2, ISO 27001 |
 
 ### Examples
 
@@ -421,14 +435,15 @@ All values are overridable via environment variables or `.env.conduit`.
 │   ├── dns.sh                   # dnsmasq configuration and management
 │   ├── tls.sh                   # Caddy CA and certificate operations
 │   └── routing.sh               # Reverse proxy route management
-├── ui/                          # Admin dashboard (React 19 + TypeScript)
+├── ui/                          # Admin dashboard (React 19 + TypeScript + Vite 6)
+│   ├── vitest.config.ts         # Test configuration (happy-dom, 225 tests)
 │   └── src/
-│       ├── components/views/    # 6 views (dashboard, services, dns, tls, servers, routing)
+│       ├── components/views/    # 6 views + blank slate + per-view empty states
 │       ├── components/layout/   # AppShell, Sidebar, StatusBar
-│       ├── components/shared/   # HealthDot, StatCard, Chip, SlideOver, Toast
+│       ├── components/shared/   # HealthDot, CopyButton, SlideOver, Toast, ViewBlankSlate
 │       ├── api/                 # Typed API client modules
-│       ├── stores/              # Zustand state management
-│       └── lib/                 # Types, utilities, OKLCH theme
+│       ├── stores/              # Zustand state (URL-synced routing)
+│       └── lib/                 # Types, formatters, OKLCH theme
 ├── templates/
 │   └── Caddyfile.service.tpl    # Per-service Caddy configuration template
 ├── conformance/                 # Audit log golden test vectors
@@ -438,8 +453,23 @@ All values are overridable via environment variables or `.env.conduit`.
 ├── examples/                    # Deployment walkthroughs
 ├── .env.conduit.example         # Configuration template
 ├── Makefile                     # All operations as Make targets
-└── VERSION                      # 0.1.0
+└── VERSION                      # 0.2.0
 ```
+
+---
+
+## Part of the Quantum Pipes Stack
+
+QP Conduit is the internal infrastructure layer. It works alongside:
+
+| Component | Role | Repository |
+|-----------|------|------------|
+| **QP Conduit** | DNS, TLS, routing, monitoring (you are here) | [quantumpipes/conduit](https://github.com/quantumpipes/conduit) |
+| **QP Tunnel** | WireGuard VPN boundary layer | [quantumpipes/tunnel](https://github.com/quantumpipes/tunnel) |
+| **QP Capsule** | Cryptographic audit trail (SHA3-256 + Ed25519) | [quantumpipes/capsule](https://github.com/quantumpipes/capsule) |
+| **qp-vault** | Governed knowledge store with content addressing | [quantumpipes/vault](https://github.com/quantumpipes/vault) |
+
+Tunnel handles the perimeter. Conduit handles the interior. Capsule provides tamper evidence. Vault stores knowledge.
 
 ---
 

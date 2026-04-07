@@ -14,6 +14,7 @@ import { serversApi } from "@/api/servers";
 import { auditApi } from "@/api/audit";
 import { HealthDot } from "@/components/shared/health-dot";
 import { EmptyState } from "@/components/shared/empty-state";
+import { BlankSlate } from "./blank-slate";
 import { useAppStore } from "@/stores/app-store";
 import { timeSince } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -59,6 +60,18 @@ export default function DashboardView() {
 
   const servicesUp = services.filter((s) => s.status === "up").length;
   const certsValid = certs.filter((c: TlsCert) => c.status === "valid").length;
+
+  // Show blank slate when nothing is configured yet
+  const isBlankSlate =
+    !servicesLoading &&
+    services.length === 0 &&
+    certs.length === 0 &&
+    dnsEntries.length === 0 &&
+    servers.length === 0;
+
+  if (isBlankSlate) {
+    return <BlankSlate />;
+  }
 
   return (
     <div className="h-full overflow-y-auto bg-surface-0 p-6">

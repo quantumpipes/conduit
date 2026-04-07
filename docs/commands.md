@@ -8,8 +8,8 @@ ai_context: |
   conduit-monitor.sh, conduit-certs.sh, conduit-dns.sh. Includes synopsis,
   options, environment variables, examples, exit codes, and audit actions.
 related:
-  - ./GUIDE.md
-  - ./API.md
+  - ./guide.md
+  - ./api.md
   - ./architecture.md
 ---
 
@@ -381,6 +381,6 @@ make conduit-certs-rotate NAME=grafana
 
 ## Related Documentation
 
-- [Guide](./GUIDE.md): Narrative walkthrough for new users
-- [API Reference](./API.md): REST API that wraps these commands
+- [Guide](./guide.md): Narrative walkthrough for new users
+- [API Reference](./api.md): REST API that wraps these commands
 - [Architecture](./architecture.md): Technical design and system overview

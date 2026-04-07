@@ -30,10 +30,36 @@ interface AppState {
   toggleSidebar: () => void;
 }
 
+// ── URL <-> View sync ──────────────────────────────────────────────────────
+
+const PATH_TO_VIEW: Record<string, View> = {
+  "/": "dashboard",
+  "/services": "services",
+  "/dns": "dns",
+  "/tls": "tls",
+  "/servers": "servers",
+  "/routing": "routing",
+};
+
+const VIEW_TO_PATH: Record<View, string> = {
+  dashboard: "/",
+  services: "/services",
+  dns: "/dns",
+  tls: "/tls",
+  servers: "/servers",
+  routing: "/routing",
+};
+
+function viewFromPath(): View {
+  return PATH_TO_VIEW[window.location.pathname] ?? "dashboard";
+}
+
+// ── Store ──────────────────────────────────────────────────────────────────
+
 const DEFAULT_STATUS = new Set<StatusFilter>(["up", "degraded", "down"]);
 
 export const useAppStore = create<AppState>((set) => ({
-  view: "dashboard",
+  view: viewFromPath(),
   filters: {
     search: "",
     status: new Set(DEFAULT_STATUS),
@@ -42,7 +68,14 @@ export const useAppStore = create<AppState>((set) => ({
   slideOver: null,
   sidebarCollapsed: false,
 
-  setView: (view) => set({ view }),
+  setView: (view) => {
+    const path = VIEW_TO_PATH[view];
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, "", path);
+    }
+    document.title = view === "dashboard" ? "QP Conduit" : `${view.charAt(0).toUpperCase() + view.slice(1)} — QP Conduit`;
+    set({ view });
+  },
 
   setSearch: (search) =>
     set((state) => ({ filters: { ...state.filters, search } })),
@@ -61,3 +94,10 @@ export const useAppStore = create<AppState>((set) => ({
   toggleSidebar: () =>
     set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 }));
+
+// Listen for browser back/forward (set state without pushing history again)
+window.addEventListener("popstate", () => {
+  const view = viewFromPath();
+  document.title = view === "dashboard" ? "QP Conduit" : `${view.charAt(0).toUpperCase() + view.slice(1)} — QP Conduit`;
+  useAppStore.setState({ view });
+});

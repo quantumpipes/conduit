@@ -2,10 +2,10 @@ import { get, post } from "./client";
 import type { TlsCert, CaInfo } from "@/lib/types";
 
 export const tlsApi = {
-  list: () => get<{ certs: TlsCert[] }>("/tls/certs"),
+  list: () => get<{ certs: TlsCert[] }>("/tls"),
   rotate: (name: string) =>
-    post<{ ok: boolean; cert: TlsCert }>(`/tls/certs/${name}/rotate`),
-  inspect: (name: string) => get<TlsCert>(`/tls/certs/${name}`),
+    post<{ ok: boolean; cert: TlsCert }>(`/tls/${name}/rotate`),
+  inspect: (name: string) => get<TlsCert>(`/tls/${name}/inspect`),
   trust: () => post<{ ok: boolean; message: string }>("/tls/trust"),
   getCaInfo: () => get<{ ca: CaInfo }>("/tls/ca"),
 };

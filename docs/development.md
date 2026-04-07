@@ -1,16 +1,16 @@
 ---
 title: "QP Conduit Developer Guide"
 description: "Developer guide for contributing to QP Conduit. Covers prerequisites, project structure, testing, adding commands and modules, Docker and native workflows, and code style."
-date_modified: "2026-04-04"
+date_modified: "2026-04-07"
 ai_context: |
   Developer guide for QP Conduit contributors. Prerequisites: bash 4+, jq,
-  bats-core, Node 22+, Python 3.14. Testing with bats (unit, integration,
-  smoke) and npm test (UI). Docker workflow via make dev/refresh. Native
-  workflow with uvicorn + npm run dev. Code conventions: shellcheck,
-  set -euo pipefail, no eval, quoted variables.
+  bats-core, Node 24+, Python 3.14. Testing with bats (unit, integration,
+  smoke), vitest + RTL (UI, 225 tests, 97%+ coverage). Docker workflow via
+  make dev/refresh/ui. Native workflow with uvicorn + npm run dev. Code
+  conventions: shellcheck, set -euo pipefail, no eval, quoted variables.
 related:
-  - ./COMMANDS.md
-  - ./ADMIN-UI.md
+  - ./commands.md
+  - ./admin-ui.md
   - ./architecture.md
 ---
 
@@ -23,8 +23,8 @@ related:
 | `bash` | 4.0+ | Shell scripts |
 | `jq` | 1.6+ | JSON processing |
 | `bats-core` | 1.10+ | Shell test framework |
-| `node` | 22+ | Admin dashboard |
-| `npm` | 10+ | Package management |
+| `node` | 24+ (LTS) | Admin dashboard |
+| `npm` | 11+ | Package management |
 | `python` | 3.14+ | Admin API server |
 | `pip` | Latest | Python dependency management |
 | `shellcheck` | 0.9+ | Shell script linter |
@@ -108,14 +108,20 @@ make test-integration
 # Smoke tests (requires a running Conduit instance)
 make test-smoke
 
-# Admin UI tests
+# Admin UI tests (225 tests, vitest + React Testing Library)
 make test-ui
+
+# Admin UI tests with coverage report
+docker run --rm -v "$(pwd)/ui:/ui" -w /ui node:24-alpine \
+  sh -c "npm ci && npx vitest run --coverage"
 
 # All tests + UI type-check
 make check
 ```
 
-Tests use [bats-core](https://github.com/bats-core/bats-core) for shell scripts. Each test file lives in `tests/unit/` or `tests/integration/` and follows the naming convention `test_<module>.bats`.
+Shell tests use [bats-core](https://github.com/bats-core/bats-core). Each test file lives in `tests/unit/` or `tests/integration/` and follows `test_<module>.bats`.
+
+UI tests use [Vitest](https://vitest.dev/) with React Testing Library and happy-dom. Test files are colocated with source (e.g., `app-store.test.ts` next to `app-store.ts`). Current coverage: 97.3% statements, 97.2% lines across 17 test files.
 
 ## Adding a New Command
 
@@ -164,11 +170,15 @@ Tests use [bats-core](https://github.com/bats-core/bats-core) for shell scripts.
 
 1. Create `ui/src/components/views/<name>/<name>-view.tsx`
 2. Add the view type to `ui/src/stores/app-store.ts` (`View` type union)
-3. Add a lazy import in `ui/src/app.tsx` and add it to the `views` object
-4. Add the navigation entry in the sidebar component
-5. Add any new API types to `ui/src/lib/types.ts`
-6. Create an API module in `ui/src/lib/api/` if the view needs new endpoints
-7. Run `make ui-typecheck` to verify
+3. Add the URL path mapping in `PATH_TO_VIEW` and `VIEW_TO_PATH` in `app-store.ts`
+4. Add a lazy import in `ui/src/app.tsx` and add it to the `views` object
+5. Add the navigation entry in `ui/src/components/layout/sidebar.tsx`
+6. Add a keyboard shortcut number in `ui/src/hooks/use-keyboard.ts`
+7. Add any new API types to `ui/src/lib/types.ts`
+8. Create an API module in `ui/src/api/` if the view needs new endpoints
+9. Add a `ViewBlankSlate` empty state for the zero-data case
+10. Write tests in `ui/src/components/views/<name>/<name>-view.test.tsx`
+11. Run `make ui-typecheck` to verify
 
 ## Docker Development Workflow
 
@@ -190,7 +200,7 @@ make logs
 
 The Docker Compose setup:
 
-- Builds the React UI in a Node 22 Alpine stage
+- Builds the React UI in a Node 24 Alpine stage
 - Runs the FastAPI server with Python 3.14 and uvicorn
 - Mounts shell scripts and lib/ as volumes for live reloading
 - Mounts the config directory for access to services.json and audit.log
@@ -202,10 +212,7 @@ The Docker Compose setup:
 For faster iteration without Docker:
 
 ```bash
-# Install UI dependencies
-make ui-install
-
-# Start UI dev server (port 5173, with HMR)
+# Start UI dev server via Docker (port 5173, with HMR, no local Node required)
 make ui
 
 # In another terminal: start the API server
@@ -216,7 +223,7 @@ uvicorn server:app --host 0.0.0.0 --port 9999 --reload
 make ui-build
 ```
 
-The Vite dev server proxies `/api/*` requests to the FastAPI server automatically.
+The `make ui` target runs Vite inside a Node 24 Docker container with the `ui/` directory mounted for hot module replacement. No local Node.js installation required. The Vite dev server proxies `/api/*` requests to the FastAPI server automatically.
 
 ## Code Style
 
@@ -265,7 +272,7 @@ Scopes: `conduit`, `dns`, `tls`, `routing`, `registry`, `audit`, `monitor`, `ui`
 
 ## Related Documentation
 
-- [Commands Reference](./COMMANDS.md): What each script does
-- [Admin UI](./ADMIN-UI.md): Dashboard architecture
-- [API Reference](./API.md): REST API documentation
+- [Commands Reference](./commands.md): What each script does
+- [Admin UI](./admin-ui.md): Dashboard architecture
+- [API Reference](./api.md): REST API documentation
 - [Architecture](./architecture.md): System design

@@ -105,7 +105,8 @@ tls_revoke_cert() {
     local name="${1:?service name required}"
     local certs_dir="${CONDUIT_CERTS_DIR:-$(ensure_config_dir)/certs}"
     local cert_dir="${certs_dir}/${name}"
-    local archive_dir="${certs_dir}/.revoked/${name}.$(date +%s)"
+    local archive_dir
+    archive_dir="${certs_dir}/.revoked/${name}.$(date +%s)"
 
     if [[ ! -d "$cert_dir" ]]; then
         log_warn "No certificate directory found for service '$name'"

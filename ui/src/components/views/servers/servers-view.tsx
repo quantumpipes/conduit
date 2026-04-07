@@ -4,6 +4,7 @@ import { Server, ChevronDown, ChevronRight, RefreshCw, Cpu, HardDrive, MemorySti
 import { serversApi } from "@/api/servers";
 import { HealthDot } from "@/components/shared/health-dot";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ViewBlankSlate } from "@/components/shared/view-blank-slate";
 import { cn } from "@/lib/cn";
 import { formatBytes } from "@/lib/format";
 import type { ServerStats, GpuInfo, ContainerInfo } from "@/lib/types";
@@ -75,11 +76,24 @@ export default function ServersView() {
 
         {/* Empty */}
         {!isPending && !isError && servers.length === 0 && (
-          <EmptyState
-            icon={<Server size={40} />}
+          <ViewBlankSlate
+            icon={<Server size={28} />}
             title="No servers reporting"
-            description="Servers appear here once they start reporting metrics to Conduit."
-            className="py-16"
+            tagline="Full-stack hardware observability"
+            description="Servers report CPU, memory, disk, GPU utilization, and container health to Conduit. One pane of glass for your entire fleet, from bare metal to containers."
+            features={[
+              { label: "CPU / Memory / Disk", description: "Real-time resource monitoring" },
+              { label: "GPU Telemetry", description: "Temp, utilization, VRAM, power" },
+              { label: "Container Health", description: "Docker state, CPU, memory per container" },
+              { label: "Auto-Refresh", description: "Live metrics every 30 seconds" },
+            ]}
+            command="make conduit-monitor"
+            commandLabel="Servers appear once they report metrics"
+            actionLabel="View Dashboard"
+            actionView="dashboard"
+            color="text-tab-servers-text"
+            bgColor="bg-tab-servers"
+            accentBorder="border-tab-servers-text/20"
           />
         )}
 

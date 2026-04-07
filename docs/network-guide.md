@@ -9,9 +9,9 @@ ai_context: |
   certutil, iOS profiles, Android), firewall rules, LAN access, and
   troubleshooting DNS resolution.
 related:
-  - ./GUIDE.md
-  - ./DEPLOYMENT.md
-  - ./CRYPTO-NOTICE.md
+  - ./guide.md
+  - ./deployment.md
+  - ./crypto-notice.md
   - ./architecture.md
 ---
 
@@ -408,7 +408,7 @@ tail -f ~/.config/qp-conduit/dnsmasq.log
 
 ## Related Documentation
 
-- [Guide](./GUIDE.md): Getting started walkthrough
-- [Deployment](./DEPLOYMENT.md): Docker and production deployment
+- [Guide](./guide.md): Getting started walkthrough
+- [Deployment](./deployment.md): Docker and production deployment
 - [Architecture](./architecture.md): DNS and TLS subsystem design
-- [Crypto Notice](./CRYPTO-NOTICE.md): Cryptographic analysis
+- [Crypto Notice](./crypto-notice.md): Cryptographic analysis

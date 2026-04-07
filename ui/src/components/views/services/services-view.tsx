@@ -5,6 +5,7 @@ import { servicesApi } from "@/api/services";
 import { HealthDot } from "@/components/shared/health-dot";
 import { SlideOver } from "@/components/shared/slide-over";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ViewBlankSlate } from "@/components/shared/view-blank-slate";
 import { useToast } from "@/components/shared/toast";
 import { timeSince } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -126,19 +127,24 @@ export default function ServicesView() {
 
         {/* Empty */}
         {!isPending && !isError && services.length === 0 && (
-          <EmptyState
-            icon={<ClipboardList size={40} />}
+          <ViewBlankSlate
+            icon={<ClipboardList size={28} />}
             title="No services registered"
-            description="Register your first service to start routing traffic through Conduit."
-            action={
-              <button
-                onClick={() => setFormOpen(true)}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
-              >
-                Register your first service
-              </button>
-            }
-            className="py-16"
+            tagline="The service registry is your single source of truth"
+            description="Register backend services and Conduit handles DNS, TLS certificates, health checks, and reverse proxy routing automatically. One command, full stack."
+            features={[
+              { label: "Auto-Discovery", description: "DNS + routes created on register" },
+              { label: "Health Checks", description: "Continuous monitoring with alerts" },
+              { label: "TLS by Default", description: "Certificates issued automatically" },
+              { label: "Zero Downtime", description: "Deregister without dropping traffic" },
+            ]}
+            command="make conduit-register NAME=grafana HOST=10.0.1.50:3000"
+            commandLabel="Register via CLI"
+            actionLabel="Register a Service"
+            onAction={() => setFormOpen(true)}
+            color="text-tab-services-text"
+            bgColor="bg-tab-services"
+            accentBorder="border-tab-services-text/20"
           />
         )}
 

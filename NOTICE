@@ -6,8 +6,23 @@ Licensed under the Apache License, Version 2.0.
 This product includes software developed by Quantum Pipes Technologies, LLC.
 https://quantumpipes.com
 
-Third-party dependencies:
+Third-party dependencies (server):
 - Caddy (https://caddyserver.com/) - Apache-2.0
 - dnsmasq (https://dnsmasq.org/) - GPL-2.0
 - jq (https://stedolan.github.io/jq/) - MIT
-- bats-core (https://github.com/bats-core/bats-core) - MIT (testing only)
+- FastAPI (https://fastapi.tiangolo.com/) - MIT
+- Uvicorn (https://www.uvicorn.org/) - BSD-3-Clause
+- Pydantic (https://docs.pydantic.dev/) - MIT
+
+Third-party dependencies (admin UI):
+- React (https://react.dev/) - MIT
+- Vite (https://vitejs.dev/) - MIT
+- TailwindCSS (https://tailwindcss.com/) - MIT
+- Zustand (https://zustand-demo.pmnd.rs/) - MIT
+- TanStack Query (https://tanstack.com/query) - MIT
+- Lucide React (https://lucide.dev/) - ISC
+
+Third-party dependencies (testing):
+- bats-core (https://github.com/bats-core/bats-core) - MIT
+- Vitest (https://vitest.dev/) - MIT
+- React Testing Library (https://testing-library.com/) - MIT

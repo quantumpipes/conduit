@@ -4,6 +4,7 @@ import { Network, RefreshCw, Activity, AlertTriangle, XCircle } from "lucide-rea
 import { routingApi } from "@/api/routing";
 import { HealthDot } from "@/components/shared/health-dot";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ViewBlankSlate } from "@/components/shared/view-blank-slate";
 import { useToast } from "@/components/shared/toast";
 import { timeSince } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -109,11 +110,24 @@ export default function RoutingView() {
 
         {/* Empty */}
         {!isPending && !isError && routes.length === 0 && (
-          <EmptyState
-            icon={<Network size={40} />}
+          <ViewBlankSlate
+            icon={<Network size={28} />}
             title="No routes configured"
-            description="Register a service to create routes. Caddy routes are generated automatically from the service registry."
-            className="py-16"
+            tagline="Caddy reverse proxy, fully automated"
+            description="Routes are generated from the service registry. Register a service and Conduit configures Caddy with TLS termination, health-aware routing, and load balancing."
+            features={[
+              { label: "Auto-Generated", description: "Routes from service registry" },
+              { label: "TLS Termination", description: "HTTPS handled at the edge" },
+              { label: "Health-Aware", description: "Routes skip unhealthy upstreams" },
+              { label: "Hot Reload", description: "Config changes without downtime" },
+            ]}
+            command="make conduit-register NAME=grafana HOST=10.0.1.50:3000"
+            commandLabel="Routes appear after registering a service"
+            actionLabel="Register a Service"
+            actionView="services"
+            color="text-tab-routing-text"
+            bgColor="bg-tab-routing"
+            accentBorder="border-tab-routing-text/20"
           />
         )}
 

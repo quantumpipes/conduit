@@ -246,8 +246,8 @@ You can run either tool independently. Conduit works without Tunnel (for local-o
 
 ## Related Documentation
 
-- [Guide](./GUIDE.md): Getting started walkthrough for new users
+- [Guide](./guide.md): Getting started walkthrough for new users
 - [Architecture](./architecture.md): System overview, DNS, TLS, routing, monitoring design
 - [Security Evaluation](./security.md): Cryptographic inventory and threat model for CISOs
-- [Deployment](./DEPLOYMENT.md): Docker, air-gap, and multi-server deployment
+- [Deployment](./deployment.md): Docker, air-gap, and multi-server deployment
 - [Deployment Examples](../examples/README.md): Real-world scenarios (home lab, healthcare, defense)

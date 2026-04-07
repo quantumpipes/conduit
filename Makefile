@@ -128,8 +128,14 @@ refresh: ## Rebuild and restart the app container
 # Admin UI (native, for development)
 # ---------------------------------------------------------------------------
 .PHONY: ui
-ui: ## Start the admin dashboard natively (dev mode, port 5173)
-	@cd $(UI_DIR) && npm run dev
+ui: ## Start the admin dashboard via Docker (dev mode, port 5173)
+	@docker run --rm -it \
+		-v $(UI_DIR):/ui \
+		-w /ui \
+		-p 127.0.0.1:5173:5173 \
+		--add-host=host.docker.internal:host-gateway \
+		node:24-alpine \
+		sh -c "npm install && npm run dev -- --host 0.0.0.0"
 
 .PHONY: ui-build
 ui-build: ## Build the admin dashboard for production

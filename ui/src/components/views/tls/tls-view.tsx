@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Shield, RefreshCw, Eye, ShieldCheck } from "lucide-react";
 import { tlsApi } from "@/api/tls";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ViewBlankSlate } from "@/components/shared/view-blank-slate";
 import { SlideOver } from "@/components/shared/slide-over";
 import { CopyButton } from "@/components/shared/copy-button";
 import { useToast } from "@/components/shared/toast";
@@ -23,6 +24,7 @@ export default function TlsView() {
   const { data: caData } = useQuery({
     queryKey: ["tls-ca"],
     queryFn: tlsApi.getCaInfo,
+    retry: false,
   });
 
   const certs = data?.certs ?? [];
@@ -53,7 +55,7 @@ export default function TlsView() {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="mb-1 text-xl font-bold">TLS TlsCerts</h1>
+            <h1 className="mb-1 text-xl font-bold">TLS Certificates</h1>
             <p className="text-sm text-text-3">
               Internal CA and service certificate management
             </p>
@@ -128,11 +130,24 @@ export default function TlsView() {
 
         {/* Empty */}
         {!isPending && !isError && certs.length === 0 && (
-          <EmptyState
-            icon={<Shield size={40} />}
+          <ViewBlankSlate
+            icon={<Shield size={28} />}
             title="No certificates issued"
-            description="TlsCerts are issued automatically when you register a TLS-enabled service."
-            className="py-16"
+            tagline="Internal CA with automatic certificate lifecycle"
+            description="Conduit runs its own Certificate Authority. Register a TLS-enabled service and certificates are issued, rotated, and monitored automatically. Ed25519 by default."
+            features={[
+              { label: "Auto-Issued", description: "Certs created on service register" },
+              { label: "Auto-Rotated", description: "Expiring certs renewed in advance" },
+              { label: "Internal CA", description: "Trust once, verify everywhere" },
+              { label: "Inspect & Audit", description: "Full cert details and PEM export" },
+            ]}
+            command="make conduit-register NAME=grafana HOST=10.0.1.50:3000"
+            commandLabel="Certificates appear after registering a TLS-enabled service"
+            actionLabel="Register a Service"
+            actionView="services"
+            color="text-tab-tls-text"
+            bgColor="bg-tab-tls"
+            accentBorder="border-tab-tls-text/20"
           />
         )}
 

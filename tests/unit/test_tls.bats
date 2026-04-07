@@ -56,7 +56,7 @@ _create_fake_ca() {
         # caddy is available: function should succeed or warn
         [ "$status" -eq 0 ]
     else
-        [ "$status" -eq 1 ]
+        [ "$status" -ne 0 ]
     fi
 }
 

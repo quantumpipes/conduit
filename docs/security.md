@@ -370,9 +370,9 @@ Conduit implements zero-trust principles at the infrastructure level:
 
 - [Architecture](./architecture.md): System overview, DNS, TLS, routing, monitoring design
 - [Why QP Conduit](./why-conduit.md): Business case and competitive positioning
-- [Crypto Notice](./CRYPTO-NOTICE.md): Cryptographic algorithm analysis
+- [Crypto Notice](./crypto-notice.md): Cryptographic algorithm analysis
 - [Compliance](./compliance/README.md): Framework mappings (HIPAA, CMMC, PCI DSS)
-- [Network Guide](./NETWORK-GUIDE.md): DNS and TLS trust configuration
+- [Network Guide](./network-guide.md): DNS and TLS trust configuration
 
 ---
 

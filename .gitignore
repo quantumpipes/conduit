@@ -54,3 +54,8 @@ test_results/
 *.log
 logs/
 ui/node_modules/
+ui/dist/
+
+# TypeScript/Vite build artifacts
+ui/src/**/*.js
+!ui/src/**/*.config.js

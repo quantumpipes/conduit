@@ -8,9 +8,9 @@ ai_context: |
   with QP Tunnel (WireGuard) and QP Core (FastAPI), systemd service files,
   backup/restore, and upgrade procedures.
 related:
-  - ./GUIDE.md
+  - ./guide.md
   - ./architecture.md
-  - ./NETWORK-GUIDE.md
+  - ./network-guide.md
   - ./security.md
 ---
 
@@ -356,7 +356,7 @@ Conduit does not run database migrations. The `services.json` format is versione
 
 ## Related Documentation
 
-- [Guide](./GUIDE.md): Getting started walkthrough
-- [Network Guide](./NETWORK-GUIDE.md): DNS and TLS trust configuration
+- [Guide](./guide.md): Getting started walkthrough
+- [Network Guide](./network-guide.md): DNS and TLS trust configuration
 - [Architecture](./architecture.md): System design
 - [Security](./security.md): Security evaluation and hardening
