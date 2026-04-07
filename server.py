@@ -96,9 +96,18 @@ async def verify_api_key(x_api_key: str = Header(default="")):
 
 app = FastAPI(
     title="QP Conduit",
-    version="0.1.0",
+    version="0.2.0",
     dependencies=[Depends(verify_api_key)],
 )
+
+import logging as _logging
+_log = _logging.getLogger("conduit")
+
+if not API_KEY:
+    _log.warning(
+        "CONDUIT_API_KEY is not set. All API endpoints are unauthenticated. "
+        "Set CONDUIT_API_KEY in your environment for production deployments."
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -131,11 +140,14 @@ async def rate_limit_middleware(request: Request, call_next):
     client_ip = request.client.host if request.client else "unknown"
     now = time.monotonic()
 
-    # Prune old entries
-    bucket = _rate_buckets[client_ip]
-    _rate_buckets[client_ip] = [t for t in bucket if now - t < RATE_WINDOW]
+    # Prune old entries and evict empty buckets to prevent memory growth
+    bucket = [t for t in _rate_buckets[client_ip] if now - t < RATE_WINDOW]
+    if bucket:
+        _rate_buckets[client_ip] = bucket
+    else:
+        _rate_buckets.pop(client_ip, None)
 
-    if len(_rate_buckets[client_ip]) >= RATE_LIMIT:
+    if len(_rate_buckets.get(client_ip, [])) >= RATE_LIMIT:
         return JSONResponse(
             {"error": "Rate limit exceeded. Try again later."},
             status_code=429,
@@ -143,7 +155,24 @@ async def rate_limit_middleware(request: Request, call_next):
         )
 
     _rate_buckets[client_ip].append(now)
-    return await call_next(request)
+    response = await call_next(request)
+
+    # Security headers on every response
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    if not path.startswith("/assets"):
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; "
+            "font-src 'self'; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'"
+        )
+
+    return response
 
 
 # ---------------------------------------------------------------------------

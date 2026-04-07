@@ -253,10 +253,10 @@ export default function ServicesView() {
         }
       >
         <form id="register-form" className="space-y-4">
-          <Field label="Service Name" name="name" placeholder="e.g. qp-core" mono />
-          <Field label="Host" name="host" placeholder="e.g. 10.0.1.50" mono />
-          <Field label="Port" name="port" placeholder="e.g. 8000" mono type="number" />
-          <Field label="Health Path" name="health_path" placeholder="/healthz" mono />
+          <Field label="Service Name" name="name" placeholder="e.g. qp-core" mono maxLength={63} pattern="^[a-zA-Z0-9][a-zA-Z0-9_-]*$" />
+          <Field label="Host" name="host" placeholder="e.g. 10.0.1.50" mono maxLength={253} />
+          <Field label="Port" name="port" placeholder="e.g. 8000" mono type="number" min={1} max={65535} />
+          <Field label="Health Path" name="health_path" placeholder="/healthz" mono maxLength={255} />
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -281,20 +281,33 @@ function Field({
   placeholder,
   mono,
   type = "text",
+  maxLength,
+  pattern,
+  min,
+  max,
 }: {
   label: string;
   name: string;
   placeholder: string;
   mono?: boolean;
   type?: string;
+  maxLength?: number;
+  pattern?: string;
+  min?: number;
+  max?: number;
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-text-2">{label}</label>
+      <label htmlFor={name} className="mb-1 block text-xs font-medium text-text-2">{label}</label>
       <input
+        id={name}
         name={name}
         type={type}
         placeholder={placeholder}
+        maxLength={maxLength}
+        pattern={pattern}
+        min={min}
+        max={max}
         className={cn(
           "w-full rounded-lg border border-border bg-surface-0 px-3 py-2 text-sm text-text-1 placeholder:text-text-muted focus:border-primary focus:outline-none",
           mono && "font-mono",
