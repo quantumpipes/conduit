@@ -260,7 +260,14 @@ function ResourceCard({
       <p className="text-lg font-bold tabular-nums text-text-1">{main}</p>
       {sub && <p className="mt-0.5 text-[11px] text-text-muted">{sub}</p>}
       {percent != null && (
-        <div className="mt-2 h-1.5 rounded-full bg-surface-3">
+        <div
+          className="mt-2 h-1.5 rounded-full bg-surface-3"
+          role="progressbar"
+          aria-valuenow={Math.round(percent)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`${label} ${Math.round(percent)}%`}
+        >
           <div
             className={cn(
               "h-full rounded-full transition-all",

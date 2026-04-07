@@ -62,8 +62,7 @@ describe("app-store", () => {
 
     it("updates document title for non-dashboard views", () => {
       useAppStore.getState().setView("tls");
-      expect(document.title).toContain("Tls");
-      expect(document.title).toContain("QP Conduit");
+      expect(document.title).toBe("TLS | QP Conduit");
     });
 
     it("sets title to 'QP Conduit' for dashboard", () => {

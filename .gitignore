@@ -59,3 +59,4 @@ ui/dist/
 # TypeScript/Vite build artifacts
 ui/src/**/*.js
 !ui/src/**/*.config.js
+*.tsbuildinfo

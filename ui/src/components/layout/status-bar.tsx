@@ -13,6 +13,7 @@ interface StatusBarProps {
 }
 
 function Dot({ ok, loading }: { ok?: boolean; loading?: boolean }) {
+  const label = loading ? "checking" : ok ? "healthy" : "unhealthy";
   return (
     <span
       className={cn(
@@ -21,6 +22,8 @@ function Dot({ ok, loading }: { ok?: boolean; loading?: boolean }) {
         !loading && ok && "bg-success shadow-[0_0_4px_var(--color-success)]",
         !loading && !ok && "bg-error",
       )}
+      role="img"
+      aria-label={label}
     />
   );
 }
@@ -67,10 +70,14 @@ export function StatusBar({
         <Pill><Dot ok={dnsOk} /> DNS</Pill>
         <Pill><Dot ok={caddyOk} /> Caddy</Pill>
         <Sep />
-        <Pill>
-          <Dot ok={allServicesUp} loading={!allServicesUp && servicesUp > 0} />
-          {servicesUp}/{servicesTotal} up
-        </Pill>
+        {servicesTotal > 0 ? (
+          <Pill>
+            <Dot ok={allServicesUp} loading={!allServicesUp && servicesUp > 0} />
+            {servicesUp}/{servicesTotal} up
+          </Pill>
+        ) : (
+          <Pill><Dot ok={false} /> No services</Pill>
+        )}
         <Pill>
           <Dot ok={certsValid > 0} />
           {certsValid} cert{certsValid !== 1 ? "s" : ""} valid

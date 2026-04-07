@@ -50,6 +50,15 @@ const VIEW_TO_PATH: Record<View, string> = {
   routing: "/routing",
 };
 
+const VIEW_TITLES: Record<View, string> = {
+  dashboard: "Dashboard",
+  services: "Services",
+  dns: "DNS",
+  tls: "TLS",
+  servers: "Servers",
+  routing: "Routing",
+};
+
 function viewFromPath(): View {
   return PATH_TO_VIEW[window.location.pathname] ?? "dashboard";
 }
@@ -73,7 +82,7 @@ export const useAppStore = create<AppState>((set) => ({
     if (window.location.pathname !== path) {
       window.history.pushState(null, "", path);
     }
-    document.title = view === "dashboard" ? "QP Conduit" : `${view.charAt(0).toUpperCase() + view.slice(1)} — QP Conduit`;
+    document.title = view === "dashboard" ? "QP Conduit" : `${VIEW_TITLES[view]} | QP Conduit`;
     set({ view });
   },
 
@@ -98,6 +107,6 @@ export const useAppStore = create<AppState>((set) => ({
 // Listen for browser back/forward (set state without pushing history again)
 window.addEventListener("popstate", () => {
   const view = viewFromPath();
-  document.title = view === "dashboard" ? "QP Conduit" : `${view.charAt(0).toUpperCase() + view.slice(1)} — QP Conduit`;
+  document.title = view === "dashboard" ? "QP Conduit" : `${VIEW_TITLES[view]} | QP Conduit`;
   useAppStore.setState({ view });
 });

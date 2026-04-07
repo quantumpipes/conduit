@@ -338,7 +338,7 @@ function CapabilityCard({
               "flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-all",
               cap.bgColor,
               cap.color,
-              "hover:brightness-125",
+              "hover:brightness-110",
             )}
           >
             Open {cap.label}
@@ -450,7 +450,7 @@ export function BlankSlate() {
           <div>
             <button
               onClick={() => setView("services")}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-all hover:brightness-110"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
             >
               <Layers size={14} />
               Register a Service

@@ -65,7 +65,7 @@ export default function TlsView() {
             disabled={trustCaMut.isPending}
             className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
-            <ShieldCheck size={14} /> Trust CA
+            <ShieldCheck size={14} /> {trustCaMut.isPending ? "Trusting..." : "Trust CA"}
           </button>
         </div>
 
@@ -253,7 +253,7 @@ function CertCard({
           disabled={rotating}
           className="ml-auto flex items-center gap-1 rounded-md border border-primary/30 px-2 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10 disabled:opacity-50"
         >
-          <RefreshCw size={11} /> Rotate
+          <RefreshCw size={11} className={cn(rotating && "animate-spin")} /> {rotating ? "Rotating..." : "Rotate"}
         </button>
       </div>
     </div>

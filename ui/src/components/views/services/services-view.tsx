@@ -208,9 +208,10 @@ export default function ServicesView() {
                 <div className="flex items-center gap-2 border-t border-border pt-3">
                   <button
                     onClick={() => healthCheckMut.mutate(svc.name)}
-                    className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-text-3 transition-colors hover:bg-surface-2"
+                    disabled={healthCheckMut.isPending}
+                    className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-text-3 transition-colors hover:bg-surface-2 disabled:opacity-50"
                   >
-                    <RefreshCw size={11} /> Check
+                    <RefreshCw size={11} className={cn(healthCheckMut.isPending && "animate-spin")} /> Check
                   </button>
                   <button
                     onClick={() => handleDeregister(svc)}

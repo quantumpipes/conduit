@@ -28,6 +28,7 @@ export function CopyButton({ text, label, className }: CopyButtonProps) {
         className,
       )}
       title="Copy"
+      aria-label={copied ? "Copied" : "Copy to clipboard"}
     >
       {copied ? <Check size={11} /> : <Copy size={11} />}
       {label && <span>{copied ? "Copied!" : label}</span>}
