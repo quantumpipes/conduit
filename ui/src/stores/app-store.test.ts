@@ -60,9 +60,21 @@ describe("app-store", () => {
       expect(window.location.pathname).toBe("/dns");
     });
 
-    it("updates document title for non-dashboard views", () => {
+    it("uses proper acronym casing in titles", () => {
       useAppStore.getState().setView("tls");
       expect(document.title).toBe("TLS | QP Conduit");
+
+      useAppStore.getState().setView("dns");
+      expect(document.title).toBe("DNS | QP Conduit");
+
+      useAppStore.getState().setView("services");
+      expect(document.title).toBe("Services | QP Conduit");
+
+      useAppStore.getState().setView("servers");
+      expect(document.title).toBe("Servers | QP Conduit");
+
+      useAppStore.getState().setView("routing");
+      expect(document.title).toBe("Routing | QP Conduit");
     });
 
     it("sets title to 'QP Conduit' for dashboard", () => {

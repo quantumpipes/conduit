@@ -83,4 +83,17 @@ describe("CopyButton", () => {
     const { container } = render(<CopyButton text="hello" className="ml-2" />);
     expect(container.querySelector(".ml-2")).toBeInTheDocument();
   });
+
+  it("has aria-label for accessibility", () => {
+    render(<CopyButton text="hello" />);
+    expect(screen.getByLabelText("Copy to clipboard")).toBeInTheDocument();
+  });
+
+  it("updates aria-label after copying", async () => {
+    render(<CopyButton text="hello" />);
+    await act(async () => {
+      fireEvent.click(screen.getByTitle("Copy"));
+    });
+    expect(screen.getByLabelText("Copied")).toBeInTheDocument();
+  });
 });

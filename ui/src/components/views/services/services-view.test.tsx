@@ -352,6 +352,17 @@ describe("ServicesView", () => {
     expect(screen.queryByText(/\d+ms/)).not.toBeInTheDocument();
   });
 
+  it("health check button has disabled attribute support", async () => {
+    vi.mocked(servicesApi.list).mockResolvedValue({ services: [SVC] });
+    vi.mocked(servicesApi.health).mockResolvedValue({ ok: true, status: "up", response_time: 5 });
+    render(<ServicesView />, { wrapper });
+    await screen.findByText("grafana");
+
+    // Button should have disabled:opacity-50 class (supports disabled state)
+    const checkBtn = screen.getByText("Check").closest("button")!;
+    expect(checkBtn.className).toContain("disabled:opacity-50");
+  });
+
   it("calls refresh", async () => {
     vi.mocked(servicesApi.list).mockResolvedValue({ services: [SVC] });
     render(<ServicesView />, { wrapper });

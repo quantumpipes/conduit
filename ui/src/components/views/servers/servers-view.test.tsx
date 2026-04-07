@@ -224,6 +224,23 @@ describe("ServersView", () => {
     expect(screen.getByText("N/A")).toBeInTheDocument();
   });
 
+  it("renders progress bars with aria attributes", async () => {
+    vi.mocked(serversApi.list).mockResolvedValue({ servers: [SERVER] });
+    render(<ServersView />, { wrapper });
+    fireEvent.click(await screen.findByText("gpu-node-1"));
+
+    const progressBars = document.querySelectorAll('[role="progressbar"]');
+    expect(progressBars.length).toBeGreaterThanOrEqual(3); // CPU, Memory, Disk
+
+    const cpuBar = Array.from(progressBars).find(
+      (el) => el.getAttribute("aria-label")?.includes("CPU"),
+    );
+    expect(cpuBar).toBeTruthy();
+    expect(cpuBar!.getAttribute("aria-valuenow")).toBe("45");
+    expect(cpuBar!.getAttribute("aria-valuemin")).toBe("0");
+    expect(cpuBar!.getAttribute("aria-valuemax")).toBe("100");
+  });
+
   it("shows degraded status color", async () => {
     vi.mocked(serversApi.list).mockResolvedValue({
       servers: [{ ...SERVER, status: "degraded" }],
