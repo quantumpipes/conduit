@@ -180,8 +180,24 @@ async def rate_limit_middleware(request: Request, call_next):
 # ---------------------------------------------------------------------------
 
 
+_PATH_PATTERN = re.compile(r"(/[\w./-]{3,})")
+
+
+def _sanitize_output(text: str) -> str:
+    """Strip absolute file paths and stack traces from shell output before returning to client."""
+    lines = []
+    for line in text.splitlines():
+        # Skip lines that look like stack traces or internal error details
+        if line.strip().startswith("Traceback") or line.strip().startswith("File "):
+            continue
+        # Redact absolute paths
+        line = _PATH_PATTERN.sub("[path]", line)
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def _run(script: str, *args: str, timeout: int = 30) -> dict:
-    """Run a conduit script and return stdout, exit code. Stderr is logged, not returned."""
+    """Run a conduit script and return sanitized stdout, exit code. Stderr is logged, not returned."""
     cmd = [str(HERE / script)] + list(args)
     try:
         result = subprocess.run(
@@ -189,7 +205,7 @@ def _run(script: str, *args: str, timeout: int = 30) -> dict:
         )
         return {
             "ok": result.returncode == 0,
-            "stdout": result.stdout,
+            "stdout": _sanitize_output(result.stdout),
             "exit_code": result.returncode,
         }
     except subprocess.TimeoutExpired:

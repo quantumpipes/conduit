@@ -51,6 +51,10 @@ export default function DnsView() {
     e.preventDefault();
     const q = resolveQuery.trim();
     if (!q) return;
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,253}[a-zA-Z0-9]$/.test(q) && q.length > 1) {
+      setResolveResult("Error: Invalid domain format");
+      return;
+    }
     setResolveResult(null);
     resolveMut.mutate(q);
   }
