@@ -18,17 +18,6 @@ Tunnel gets you in. Conduit connects everything inside. Automatic DNS, internal 
 
 > **AI coding agents:** start with [AGENTS.md](./AGENTS.md). It contains the 8-command shell surface, the FastAPI admin API, the React UI test gates, the bash + Python + TypeScript style rules, and the split-tunnel / auth-required invariants for the admin plane.
 
-**Try it on your codebase.** Paste this into Claude Code, Cursor, Codex, or any AI coding agent:
-
-```text
-Read the QP Conduit README and AGENTS.md at https://github.com/quantumpipes/conduit.
-Then survey my on-premises infrastructure for services that need internal DNS, TLS
-certificates, reverse proxying, or health monitoring. For each, show what a single
-`conduit-register.sh` call would configure (DNS entry, Caddy route, cert issuance,
-audit entry). Identify services currently reachable on raw IP:port and recommend the
-migration order, with concrete hostnames and ports.
-```
-
 ---
 
 ## The Problem
@@ -67,6 +56,21 @@ OUTSIDE              BOUNDARY              INSIDE
 **Air-gap compatible.** Internal CA, local DNS, no external dependencies. Works in classified environments, air-gapped clinics, and disconnected field deployments.
 
 **Pairs with QP Tunnel.** Tunnel handles the boundary (VPN access from outside). Conduit handles the interior (DNS, TLS, routing, monitoring). Together they form a complete networking layer for on-premises AI.
+
+---
+
+## Explore the fit with your AI coding agent
+
+Paste this prompt into Claude Code, Cursor, Codex, or any other agent:
+
+```text
+Read the QP Conduit README and AGENTS.md at https://github.com/quantumpipes/conduit.
+Then survey my on-premises infrastructure for services that need internal DNS, TLS
+certificates, reverse proxying, or health monitoring. For each, show what a single
+`conduit-register.sh` call would configure (DNS entry, Caddy route, cert issuance,
+audit entry). Identify services currently reachable on raw IP:port and recommend the
+migration order, with concrete hostnames and ports.
+```
 
 ---
 
