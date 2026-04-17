@@ -12,8 +12,22 @@ Tunnel gets you in. Conduit connects everything inside. Automatic DNS, internal 
 [![Tests](https://img.shields.io/badge/Tests-225_passing-brightgreen.svg)](#admin-dashboard)
 [![Coverage](https://img.shields.io/badge/Coverage-97%25-brightgreen.svg)](#admin-dashboard)
 [![Admin UI](https://img.shields.io/badge/UI-React_19_%2B_OKLCH-ff69b4.svg)](#admin-dashboard)
+[![AI Agents](https://img.shields.io/badge/AI%20Agents-AGENTS.md-blueviolet.svg)](./AGENTS.md)
 
 </div>
+
+> **AI coding agents:** start with [AGENTS.md](./AGENTS.md). It contains the 8-command shell surface, the FastAPI admin API, the React UI test gates, the bash + Python + TypeScript style rules, and the split-tunnel / auth-required invariants for the admin plane.
+
+**Try it on your codebase.** Paste this into Claude Code, Cursor, Codex, or any AI coding agent:
+
+```text
+Read the QP Conduit README and AGENTS.md at https://github.com/quantumpipes/conduit.
+Then survey my on-premises infrastructure for services that need internal DNS, TLS
+certificates, reverse proxying, or health monitoring. For each, show what a single
+`conduit-register.sh` call would configure (DNS entry, Caddy route, cert issuance,
+audit entry). Identify services currently reachable on raw IP:port and recommend the
+migration order, with concrete hostnames and ports.
+```
 
 ---
 
