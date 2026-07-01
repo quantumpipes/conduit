@@ -28,6 +28,53 @@ _routes_dir() {
 }
 
 # ---------------------------------------------------------------------------
+# validate_upstream UPSTREAM
+# Defense-in-depth SSRF / proxy-takeover guard mirroring server.py
+# _validate_upstream_host. Rejects an upstream whose host is a loopback,
+# link-local (incl. the 169.254.169.254 metadata endpoint), unspecified, or a
+# non-169.254 cloud metadata endpoint (Alibaba 100.100.100.200, Oracle/OpenStack
+# 192.0.0.192, IPv6 fd00:ec2::254) literal IP before it is written into a Caddy
+# reverse_proxy block.
+# Returns 0 when allowed, 1 when blocked.
+# ---------------------------------------------------------------------------
+validate_upstream() {
+    local upstream="${1:-}"
+    if [[ -z "$upstream" ]]; then
+        log_error "Upstream must not be empty"
+        return 1
+    fi
+
+    # Strip a single :port suffix to isolate the host literal.
+    local host="${upstream%:*}"
+
+    # Block obvious non-routable / metadata literals. Names are left to the
+    # Python layer's resolving check; this catches direct-IP pivots.
+    case "$host" in
+        127.*|0.0.0.0|0|::1|"[::1]"|localhost)
+            log_error "Blocked upstream host '$host' (loopback/unspecified)"
+            return 1
+            ;;
+        169.254.*|"[fe80:"*|fe80:*)
+            log_error "Blocked upstream host '$host' (link-local/metadata)"
+            return 1
+            ;;
+        100.100.100.200|192.0.0.192|fd00:ec2:*|"[fd00:ec2:"*)
+            # Non-169.254 cloud instance-metadata endpoints: Alibaba (ECS),
+            # Oracle Cloud / OpenStack, and IPv6 EC2. These are usable SSRF /
+            # credential-theft pivots and are not caught by the loopback /
+            # link-local / unspecified patterns above.
+            log_error "Blocked upstream host '$host' (cloud metadata endpoint)"
+            return 1
+            ;;
+        255.255.255.255)
+            log_error "Blocked upstream host '$host' (broadcast)"
+            return 1
+            ;;
+    esac
+    return 0
+}
+
+# ---------------------------------------------------------------------------
 # route_add SERVICE_NAME UPSTREAM [TLS_CERT_PATH]
 # Generates a Caddyfile block for the service and writes it to routes/.
 # ---------------------------------------------------------------------------
@@ -41,6 +88,10 @@ route_add() {
     local route_file="${routes_dir}/${name}.caddy"
 
     if ! validate_service_name "$name"; then
+        return 1
+    fi
+
+    if ! validate_upstream "$upstream"; then
         return 1
     fi
 

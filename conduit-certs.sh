@@ -121,7 +121,25 @@ case "$ACTION" in
     trust)
         echo ""
         log_info "Installing internal CA into system trust store..."
-        tls_trust_ca
+
+        # Capsule-everything: the CA-trust install is the highest-privilege
+        # sudo-backed operation in Conduit (it changes what certificates the
+        # whole host trusts), so it MUST leave an immutable audit/capsule record
+        # whether it succeeds or fails. Mirror the cert_rotate / dns_flush
+        # treatment so the privileged surface is consistently sealed.
+        os_type="$(uname -s)"
+        if tls_trust_ca; then
+            audit_log "ca_trust_install" "success" \
+                "Internal CA installed into system trust store" \
+                "{\"os\":\"${os_type}\"}"
+        else
+            trust_rc=$?
+            audit_log "ca_trust_install" "failure" \
+                "Internal CA trust install failed (exit ${trust_rc})" \
+                "{\"os\":\"${os_type}\",\"exit_code\":${trust_rc}}"
+            echo ""
+            exit "$trust_rc"
+        fi
         echo ""
         ;;
 esac

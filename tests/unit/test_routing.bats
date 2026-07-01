@@ -30,62 +30,62 @@ _get_perms() {
 # ===========================================================================
 
 @test "route_add creates route file" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     local route_file="$CONDUIT_CONFIG_DIR/routes/hub.caddy"
     [ -f "$route_file" ]
 }
 
 @test "route_add generates correct domain" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     local route_file="$CONDUIT_CONFIG_DIR/routes/hub.caddy"
     run grep "hub.qp.local" "$route_file"
     [ "$status" -eq 0 ]
 }
 
 @test "route_add includes reverse_proxy upstream" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     local route_file="$CONDUIT_CONFIG_DIR/routes/hub.caddy"
-    run grep "reverse_proxy 127.0.0.1:8090" "$route_file"
+    run grep "reverse_proxy 203.0.113.10:8090" "$route_file"
     [ "$status" -eq 0 ]
 }
 
 @test "route_add includes tls internal by default" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     local route_file="$CONDUIT_CONFIG_DIR/routes/hub.caddy"
     run grep "tls internal" "$route_file"
     [ "$status" -eq 0 ]
 }
 
 @test "route_add includes X-Forwarded-Proto header" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     local route_file="$CONDUIT_CONFIG_DIR/routes/hub.caddy"
     run grep "X-Forwarded-Proto" "$route_file"
     [ "$status" -eq 0 ]
 }
 
 @test "route_add includes X-Real-IP header" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     local route_file="$CONDUIT_CONFIG_DIR/routes/hub.caddy"
     run grep "X-Real-IP" "$route_file"
     [ "$status" -eq 0 ]
 }
 
 @test "route_add includes health check config" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     local route_file="$CONDUIT_CONFIG_DIR/routes/hub.caddy"
     run grep "health_uri /healthz" "$route_file"
     [ "$status" -eq 0 ]
 }
 
 @test "route_add includes log block" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     local route_file="$CONDUIT_CONFIG_DIR/routes/hub.caddy"
     run grep "format json" "$route_file"
     [ "$status" -eq 0 ]
 }
 
 @test "route_add sets 600 permissions" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     local route_file="$CONDUIT_CONFIG_DIR/routes/hub.caddy"
     local perms
     perms="$(_get_perms "$route_file")"
@@ -93,7 +93,7 @@ _get_perms() {
 }
 
 @test "route_add validates service name" {
-    run route_add "bad name" "127.0.0.1:8090"
+    run route_add "bad name" "203.0.113.10:8090"
     [ "$status" -eq 1 ]
 }
 
@@ -101,7 +101,7 @@ _get_perms() {
     local fake_cert_dir="$CONDUIT_CONFIG_DIR/certs/hub"
     mkdir -p "$fake_cert_dir"
     touch "$fake_cert_dir/cert.pem" "$fake_cert_dir/key.pem"
-    route_add "hub" "127.0.0.1:8090" "$fake_cert_dir/cert.pem"
+    route_add "hub" "203.0.113.10:8090" "$fake_cert_dir/cert.pem"
     local route_file="$CONDUIT_CONFIG_DIR/routes/hub.caddy"
     run grep "cert.pem" "$route_file"
     [ "$status" -eq 0 ]
@@ -111,19 +111,19 @@ _get_perms() {
 
 @test "route_add uses custom domain" {
     export CONDUIT_DOMAIN="custom.test"
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     local route_file="$CONDUIT_CONFIG_DIR/routes/hub.caddy"
     run grep "hub.custom.test" "$route_file"
     [ "$status" -eq 0 ]
 }
 
 @test "route_add creates routes directory" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     [ -d "$CONDUIT_CONFIG_DIR/routes" ]
 }
 
 @test "route_add routes directory has 700 permissions" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     local perms
     perms="$(_get_perms "$CONDUIT_CONFIG_DIR/routes")"
     [ "$perms" = "700" ]
@@ -134,7 +134,7 @@ _get_perms() {
 # ===========================================================================
 
 @test "route_remove removes route file" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     route_remove "hub"
     [ ! -f "$CONDUIT_CONFIG_DIR/routes/hub.caddy" ]
 }
@@ -145,7 +145,7 @@ _get_perms() {
 }
 
 @test "route_remove preserves other routes" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     route_add "grafana" "10.0.1.5:3000"
     route_remove "hub"
     [ ! -f "$CONDUIT_CONFIG_DIR/routes/hub.caddy" ]
@@ -163,20 +163,20 @@ _get_perms() {
 }
 
 @test "route_list shows header" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     run route_list
     [[ "$output" == *"SERVICE"* ]]
     [[ "$output" == *"ROUTE FILE"* ]]
 }
 
 @test "route_list lists added route" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     run route_list
     [[ "$output" == *"hub"* ]]
 }
 
 @test "route_list lists multiple routes" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     route_add "grafana" "10.0.1.5:3000"
     run route_list
     [[ "$output" == *"hub"* ]]
@@ -184,7 +184,7 @@ _get_perms() {
 }
 
 @test "route_list does not show removed routes" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     route_add "grafana" "10.0.1.5:3000"
     route_remove "hub"
     run route_list
@@ -217,7 +217,7 @@ _get_perms() {
 }
 
 @test "route_generate_caddyfile includes service routes" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     route_generate_caddyfile
     local caddyfile="$CONDUIT_CONFIG_DIR/Caddyfile"
     run grep "hub.qp.local" "$caddyfile"
@@ -225,7 +225,7 @@ _get_perms() {
 }
 
 @test "route_generate_caddyfile combines multiple service routes" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     route_add "grafana" "10.0.1.5:3000"
     route_generate_caddyfile
     local caddyfile="$CONDUIT_CONFIG_DIR/Caddyfile"
@@ -249,7 +249,7 @@ _get_perms() {
 }
 
 @test "route_generate_caddyfile is idempotent" {
-    route_add "hub" "127.0.0.1:8090"
+    route_add "hub" "203.0.113.10:8090"
     route_generate_caddyfile
     route_generate_caddyfile
     local caddyfile="$CONDUIT_CONFIG_DIR/Caddyfile"
@@ -274,4 +274,59 @@ _get_perms() {
 @test "route_reload fails without Caddyfile" {
     run route_reload
     [ "$status" -eq 1 ]
+}
+
+# ===========================================================================
+# validate_upstream (SSRF / metadata-pivot guard)
+# ===========================================================================
+
+@test "validate_upstream allows a routable upstream" {
+    run validate_upstream "203.0.113.10:8090"
+    [ "$status" -eq 0 ]
+}
+
+@test "validate_upstream blocks empty upstream" {
+    run validate_upstream ""
+    [ "$status" -eq 1 ]
+}
+
+@test "validate_upstream blocks loopback" {
+    run validate_upstream "127.0.0.1:8090"
+    [ "$status" -eq 1 ]
+}
+
+@test "validate_upstream blocks unspecified" {
+    run validate_upstream "0.0.0.0:8090"
+    [ "$status" -eq 1 ]
+}
+
+@test "validate_upstream blocks AWS link-local metadata endpoint" {
+    run validate_upstream "169.254.169.254:80"
+    [ "$status" -eq 1 ]
+}
+
+@test "validate_upstream blocks Alibaba metadata endpoint" {
+    run validate_upstream "100.100.100.200:80"
+    [ "$status" -eq 1 ]
+}
+
+@test "validate_upstream blocks Oracle/OpenStack metadata endpoint" {
+    run validate_upstream "192.0.0.192:80"
+    [ "$status" -eq 1 ]
+}
+
+@test "validate_upstream blocks IPv6 cloud metadata endpoint" {
+    run validate_upstream "fd00:ec2::254"
+    [ "$status" -eq 1 ]
+}
+
+@test "validate_upstream blocks bracketed IPv6 cloud metadata endpoint" {
+    run validate_upstream "[fd00:ec2::254]:80"
+    [ "$status" -eq 1 ]
+}
+
+@test "route_add blocks Alibaba metadata upstream" {
+    run route_add "evil" "100.100.100.200:80"
+    [ "$status" -eq 1 ]
+    [ ! -f "$CONDUIT_CONFIG_DIR/routes/evil.caddy" ]
 }

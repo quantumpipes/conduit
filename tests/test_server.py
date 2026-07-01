@@ -18,6 +18,14 @@ from httpx import ASGITransport, AsyncClient
 # ---------------------------------------------------------------------------
 
 
+# A fixed key used to exercise authenticated/privileged endpoints. The default
+# fixture configures this so privileged endpoints (which fail closed when no key
+# is set) are reachable in the common test path. Tests that assert the
+# fail-closed behavior clear it explicitly via the `dev_mode` fixture.
+TEST_API_KEY = "test-conduit-key-0123456789"
+PRIVILEGED_HEADERS = {"X-API-Key": TEST_API_KEY}
+
+
 @pytest.fixture(autouse=True)
 def _isolate_config(tmp_path, monkeypatch):
     """Isolate every test to a unique temp directory for config/registry/audit."""
@@ -33,8 +41,40 @@ def _isolate_config(tmp_path, monkeypatch):
     monkeypatch.setattr(srv, "CONFIG_DIR", config_dir)
     monkeypatch.setattr(srv, "REGISTRY_PATH", config_dir / "services.json")
     monkeypatch.setattr(srv, "AUDIT_PATH", config_dir / "audit.log")
+    # Reset the module-global in-memory rate-limit buckets so requests from the
+    # shared TestClient IP do not bleed across tests and trip the limiter (429).
+    srv._rate_buckets.clear()
+    # Default to dev mode (no API key) so read-only endpoints stay anonymously
+    # reachable as before. Privileged-endpoint and auth tests opt into a key via
+    # the `keyed` fixture; the verify_api_key/require_privileged dependencies
+    # read srv.API_KEY at request time, so patching it per test is sufficient.
 
     return config_dir
+
+
+@pytest.fixture
+def keyed(monkeypatch):
+    """Configure an API key, enabling privileged endpoints and key enforcement."""
+    import server as srv
+
+    monkeypatch.setattr(srv, "API_KEY", TEST_API_KEY)
+    return srv
+
+
+@pytest.fixture
+def priv_client(monkeypatch):
+    """Keyed test client that sends a valid X-API-Key on every request.
+
+    Use for privileged / state-changing endpoints, which fail closed when no key
+    is configured. Read-only tests should use the plain `client` fixture (dev
+    mode, anonymous) so their behavior is unchanged.
+    """
+    from fastapi.testclient import TestClient
+    import server as srv
+
+    monkeypatch.setattr(srv, "API_KEY", TEST_API_KEY)
+    with TestClient(srv.app, base_url="http://testserver", headers=PRIVILEGED_HEADERS) as c:
+        yield c
 
 
 @pytest.fixture
@@ -44,12 +84,16 @@ def config_dir(_isolate_config):
 
 @pytest.fixture
 def client():
-    """Synchronous test client for the FastAPI app."""
-    from httpx import Client, ASGITransport
+    """Synchronous test client for the FastAPI app.
+
+    Uses Starlette's TestClient (the canonical sync ASGI client). The previous
+    ``httpx.Client(transport=ASGITransport(...))`` construction is async-only in
+    current httpx and fails at context entry.
+    """
+    from fastapi.testclient import TestClient
     import server as srv
 
-    transport = ASGITransport(app=srv.app)
-    with Client(transport=transport, base_url="http://testserver") as c:
+    with TestClient(srv.app, base_url="http://testserver") as c:
         yield c
 
 
@@ -249,41 +293,46 @@ class TestListServices:
 
 
 class TestRegisterService:
+    @patch("server._validate_upstream_host", lambda host: host)
     @patch("server._run")
-    def test_validates_required_name(self, mock_run, client):
+    def test_validates_required_name(self, mock_run, priv_client):
         mock_run.return_value = {"ok": True, "stdout": "", "stderr": "", "exit_code": 0}
-        resp = client.post("/api/services", json={"name": "hub", "host": "127.0.0.1"})
+        resp = priv_client.post("/api/services", json={"name": "hub", "host": "10.0.1.5"})
         assert resp.status_code == 200
 
+    @patch("server._validate_upstream_host", lambda host: host)
     @patch("server._run")
-    def test_calls_register_script(self, mock_run, client):
+    def test_calls_register_script(self, mock_run, priv_client):
         mock_run.return_value = {"ok": True, "stdout": "", "stderr": "", "exit_code": 0}
-        client.post("/api/services", json={"name": "hub", "host": "127.0.0.1"})
+        priv_client.post("/api/services", json={"name": "hub", "host": "10.0.1.5"})
         mock_run.assert_called_once()
         args = mock_run.call_args[0]
         assert args[0] == "conduit-register.sh"
 
+    @patch("server._validate_upstream_host", lambda host: host)
     @patch("server._run")
-    def test_passes_name_and_host(self, mock_run, client):
+    def test_passes_name_and_host(self, mock_run, priv_client):
         mock_run.return_value = {"ok": True, "stdout": "", "stderr": "", "exit_code": 0}
-        client.post("/api/services", json={"name": "hub", "host": "10.0.1.5"})
+        priv_client.post("/api/services", json={"name": "hub", "host": "10.0.1.5"})
         call_args = mock_run.call_args[0]
         assert "--name" in call_args
         assert "hub" in call_args
         assert "--host" in call_args
         assert "10.0.1.5" in call_args
 
+    @patch("server._validate_upstream_host", lambda host: host)
     @patch("server._run")
-    def test_passes_no_tls_flag(self, mock_run, client):
+    def test_passes_no_tls_flag(self, mock_run, priv_client):
         mock_run.return_value = {"ok": True, "stdout": "", "stderr": "", "exit_code": 0}
-        client.post("/api/services", json={"name": "hub", "host": "10.0.1.5", "no_tls": True})
+        priv_client.post("/api/services", json={"name": "hub", "host": "10.0.1.5", "no_tls": True})
         call_args = mock_run.call_args[0]
         assert "--no-tls" in call_args
 
+    @patch("server._validate_upstream_host", lambda host: host)
     @patch("server._run")
-    def test_returns_script_result(self, mock_run, client):
+    def test_returns_script_result(self, mock_run, priv_client):
         mock_run.return_value = {"ok": False, "stdout": "", "stderr": "error", "exit_code": 1}
-        resp = client.post("/api/services", json={"name": "hub", "host": "127.0.0.1"})
+        resp = priv_client.post("/api/services", json={"name": "hub", "host": "10.0.1.5"})
         data = resp.json()
         assert data["ok"] is False
 
@@ -295,23 +344,23 @@ class TestRegisterService:
 
 class TestDeregisterService:
     @patch("server._run")
-    def test_calls_deregister_script(self, mock_run, client):
+    def test_calls_deregister_script(self, mock_run, priv_client):
         mock_run.return_value = {"ok": True, "stdout": "", "stderr": "", "exit_code": 0}
-        resp = client.delete("/api/services/hub")
+        resp = priv_client.delete("/api/services/hub")
         assert resp.status_code == 200
         mock_run.assert_called_once()
 
     @patch("server._run")
-    def test_passes_service_name(self, mock_run, client):
+    def test_passes_service_name(self, mock_run, priv_client):
         mock_run.return_value = {"ok": True, "stdout": "", "stderr": "", "exit_code": 0}
-        client.delete("/api/services/grafana")
+        priv_client.delete("/api/services/grafana")
         call_args = mock_run.call_args[0]
         assert "grafana" in call_args
 
     @patch("server._run")
-    def test_returns_result(self, mock_run, client):
+    def test_returns_result(self, mock_run, priv_client):
         mock_run.return_value = {"ok": True, "stdout": "done", "stderr": "", "exit_code": 0}
-        resp = client.delete("/api/services/hub")
+        resp = priv_client.delete("/api/services/hub")
         data = resp.json()
         assert data["ok"] is True
 
@@ -389,9 +438,9 @@ class TestDNSResolve:
 
 class TestDNSFlush:
     @patch("server._run")
-    def test_flush_returns_result(self, mock_run, client):
+    def test_flush_returns_result(self, mock_run, priv_client):
         mock_run.return_value = {"ok": True, "stdout": "flushed", "stderr": "", "exit_code": 0}
-        resp = client.post("/api/dns/flush")
+        resp = priv_client.post("/api/dns/flush")
         assert resp.status_code == 200
         data = resp.json()
         assert data["ok"] is True
@@ -419,17 +468,17 @@ class TestTLS:
 
 class TestTLSRotate:
     @patch("server._run")
-    def test_rotate_returns_result(self, mock_run, client):
+    def test_rotate_returns_result(self, mock_run, priv_client):
         mock_run.return_value = {"ok": True, "stdout": "rotated", "stderr": "", "exit_code": 0}
-        resp = client.post("/api/tls/hub/rotate")
+        resp = priv_client.post("/api/tls/hub/rotate")
         assert resp.status_code == 200
         data = resp.json()
         assert data["ok"] is True
 
     @patch("server._run")
-    def test_rotate_passes_name(self, mock_run, client):
+    def test_rotate_passes_name(self, mock_run, priv_client):
         mock_run.return_value = {"ok": True, "stdout": "", "stderr": "", "exit_code": 0}
-        client.post("/api/tls/grafana/rotate")
+        priv_client.post("/api/tls/grafana/rotate")
         call_args = mock_run.call_args[0]
         assert "grafana" in call_args
 
@@ -515,20 +564,66 @@ class TestRouting:
 
 class TestRoutingReload:
     @patch("server.subprocess.run")
-    def test_reload_returns_result(self, mock_run, client):
+    def test_reload_returns_result(self, mock_run, priv_client):
         mock_result = MagicMock()
         mock_result.returncode = 0
         mock_run.return_value = mock_result
-        resp = client.post("/api/routing/reload")
+        resp = priv_client.post("/api/routing/reload")
         assert resp.status_code == 200
         data = resp.json()
         assert "ok" in data
 
     @patch("server.subprocess.run", side_effect=FileNotFoundError)
-    def test_reload_handles_missing_curl(self, mock_run, client):
-        resp = client.post("/api/routing/reload")
+    def test_reload_handles_missing_curl(self, mock_run, priv_client):
+        resp = priv_client.post("/api/routing/reload")
         data = resp.json()
         assert data["ok"] is False
+
+    @patch("server._audit_capsule")
+    @patch("server.subprocess.run")
+    def test_reload_seals_audit_on_success(self, mock_run, mock_audit, priv_client):
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_run.return_value = mock_result
+        resp = priv_client.post("/api/routing/reload")
+        assert resp.status_code == 200
+        mock_audit.assert_called_once()
+        assert mock_audit.call_args.args[0] == "caddy_reload"
+        assert mock_audit.call_args.args[1] == "success"
+
+    @patch("server._audit_capsule")
+    @patch("server.subprocess.run", side_effect=FileNotFoundError)
+    def test_reload_seals_audit_on_unreachable(self, mock_run, mock_audit, priv_client):
+        resp = priv_client.post("/api/routing/reload")
+        assert resp.json()["ok"] is False
+        mock_audit.assert_called_once()
+        assert mock_audit.call_args.args[0] == "caddy_reload"
+        assert mock_audit.call_args.args[1] == "failure"
+
+
+class TestAuditCapsuleHelper:
+    """_audit_capsule must durably write the JSONL line and fail open on seal."""
+
+    def test_writes_audit_jsonl_line(self, config_dir):
+        import server as srv
+
+        # qp-capsule is typically absent in CI: seal must fail open, line stays.
+        srv._audit_capsule("caddy_reload", "success", "reloaded", {"admin": "localhost:2019"})
+        audit_path = config_dir / "audit.log"
+        assert audit_path.exists()
+        entries = [json.loads(line) for line in audit_path.read_text().splitlines()]
+        assert entries[-1]["action"] == "caddy_reload"
+        assert entries[-1]["status"] == "success"
+        assert entries[-1]["details"]["admin"] == "localhost:2019"
+
+    @patch("server.subprocess.run")
+    def test_seal_failure_does_not_raise(self, mock_run, config_dir):
+        import server as srv
+
+        mock_run.side_effect = FileNotFoundError
+        # Must not raise even though the capsule CLI is unavailable.
+        srv._audit_capsule("caddy_reload", "failure", "unreachable", None)
+        assert (config_dir / "audit.log").exists()
 
 
 # ===========================================================================
@@ -746,7 +841,160 @@ class TestSPAFallback:
 
 class TestTLSTrust:
     @patch("server._run")
-    def test_trust_returns_result(self, mock_run, client):
+    def test_trust_returns_result(self, mock_run, priv_client):
         mock_run.return_value = {"ok": True, "stdout": "trusted", "stderr": "", "exit_code": 0}
-        resp = client.post("/api/tls/trust")
+        resp = priv_client.post("/api/tls/trust")
         assert resp.status_code == 200
+
+
+# ===========================================================================
+# Fail-closed authentication (Finding 1) and upstream SSRF guard (Finding 2)
+# ===========================================================================
+
+
+class TestPrivilegedFailClosed:
+    """Privileged endpoints must refuse anonymous access even in dev mode."""
+
+    PRIVILEGED_CALLS = [
+        ("post", "/api/tls/trust", None),
+        ("post", "/api/routing/reload", None),
+        ("post", "/api/dns/flush", None),
+        ("post", "/api/tls/hub/rotate", None),
+        ("delete", "/api/services/hub", None),
+        ("post", "/api/services", {"name": "hub", "host": "10.0.1.5"}),
+    ]
+
+    @pytest.mark.parametrize("method,path,body", PRIVILEGED_CALLS)
+    def test_dev_mode_seals_privileged_endpoints(self, client, method, path, body):
+        # `client` is dev mode (no key configured by default).
+        kwargs = {"json": body} if body is not None else {}
+        resp = getattr(client, method)(path, **kwargs)
+        # No key configured: privileged surface is sealed (503), never executed.
+        assert resp.status_code == 503
+
+    @pytest.mark.parametrize("method,path,body", PRIVILEGED_CALLS)
+    def test_keyed_but_no_header_is_401(self, keyed, client, method, path, body):
+        kwargs = {"json": body} if body is not None else {}
+        resp = getattr(client, method)(path, **kwargs)
+        # Key configured but no header sent: 401.
+        assert resp.status_code == 401
+
+    def test_read_only_status_allowed_in_dev_mode(self, client, registry_file):
+        resp = client.get("/api/status")
+        assert resp.status_code == 200
+
+    def test_read_only_requires_key_when_configured(self, keyed, client, registry_file):
+        # When a key is configured, read-only endpoints require it too.
+        resp = client.get("/api/status")
+        assert resp.status_code == 401
+
+    def test_wrong_key_rejected(self, keyed, client):
+        resp = client.post("/api/tls/trust", headers={"X-API-Key": "wrong-key"})
+        assert resp.status_code == 401
+
+
+class TestUpstreamSSRFGuard:
+    """Service registration must reject SSRF-prone / non-allowlisted upstreams."""
+
+    @pytest.mark.parametrize(
+        "host",
+        [
+            "127.0.0.1",
+            "169.254.169.254",  # AWS/Azure/GCP cloud metadata endpoint
+            "100.100.100.200",  # Alibaba Cloud ECS metadata endpoint
+            "192.0.0.192",  # Oracle Cloud / OpenStack metadata endpoint
+            "0.0.0.0",
+        ],
+    )
+    @patch("server._run")
+    def test_blocks_dangerous_literal_upstreams(self, mock_run, priv_client, host):
+        resp = priv_client.post("/api/services", json={"name": "evil", "host": host})
+        assert resp.status_code == 422
+        mock_run.assert_not_called()
+
+    @patch("server._run")
+    def test_allows_routable_upstream(self, mock_run, priv_client):
+        mock_run.return_value = {"ok": True, "stdout": "", "stderr": "", "exit_code": 0}
+        resp = priv_client.post("/api/services", json={"name": "hub", "host": "203.0.113.10"})
+        assert resp.status_code == 200
+        mock_run.assert_called_once()
+
+    @patch("server._run")
+    def test_unresolvable_host_rejected(self, mock_run, priv_client):
+        resp = priv_client.post(
+            "/api/services", json={"name": "hub", "host": "no-such-host.invalid"}
+        )
+        assert resp.status_code == 422
+        mock_run.assert_not_called()
+
+    @patch("server._validate_upstream_host", lambda host: host)
+    @patch("server._run")
+    def test_reregister_requires_overwrite(self, mock_run, priv_client, populated_registry):
+        resp = priv_client.post("/api/services", json={"name": "hub", "host": "203.0.113.10"})
+        assert resp.status_code == 409
+        mock_run.assert_not_called()
+
+    @patch("server._validate_upstream_host", lambda host: host)
+    @patch("server._run")
+    def test_reregister_with_overwrite_allowed(self, mock_run, priv_client, populated_registry):
+        mock_run.return_value = {"ok": True, "stdout": "", "stderr": "", "exit_code": 0}
+        resp = priv_client.post(
+            "/api/services",
+            json={"name": "hub", "host": "203.0.113.10", "overwrite": True},
+        )
+        assert resp.status_code == 200
+        mock_run.assert_called_once()
+
+    @patch("server._run")
+    def test_allowlist_blocks_non_member(self, mock_run, priv_client, monkeypatch):
+        import server as srv
+
+        monkeypatch.setattr(srv, "ALLOWED_UPSTREAMS", ["203.0.113.0/24"])
+        resp = priv_client.post("/api/services", json={"name": "hub", "host": "198.51.100.7"})
+        assert resp.status_code == 422
+        mock_run.assert_not_called()
+
+    @patch("server._run")
+    def test_allowlist_allows_member(self, mock_run, priv_client, monkeypatch):
+        import server as srv
+
+        monkeypatch.setattr(srv, "ALLOWED_UPSTREAMS", ["203.0.113.0/24"])
+        mock_run.return_value = {"ok": True, "stdout": "", "stderr": "", "exit_code": 0}
+        resp = priv_client.post("/api/services", json={"name": "hub", "host": "203.0.113.42"})
+        assert resp.status_code == 200
+        mock_run.assert_called_once()
+
+
+class TestValidateUpstreamHostUnit:
+    """Direct unit coverage of the _validate_upstream_host / _is_blocked_ip helpers."""
+
+    @pytest.mark.parametrize(
+        "addr",
+        [
+            "127.0.0.1",
+            "169.254.169.254",  # AWS/Azure/GCP-IPv4 metadata (link-local)
+            "100.100.100.200",  # Alibaba metadata (not flagged by stdlib)
+            "192.0.0.192",  # Oracle/OpenStack metadata (not flagged by stdlib)
+            "fd00:ec2::254",  # IPv6 cloud metadata (ULA, not flagged by stdlib)
+            "0.0.0.0",
+            "::1",
+            "fe80::1",
+        ],
+    )
+    def test_is_blocked_ip_true(self, addr):
+        import ipaddress
+        import server as srv
+
+        assert srv._is_blocked_ip(ipaddress.ip_address(addr)) is True
+
+    @pytest.mark.parametrize("addr", ["203.0.113.5", "8.8.8.8", "2606:4700:4700::1111"])
+    def test_is_blocked_ip_false(self, addr):
+        import ipaddress
+        import server as srv
+
+        assert srv._is_blocked_ip(ipaddress.ip_address(addr)) is False
+
+    def test_strips_port_suffix(self):
+        import server as srv
+
+        assert srv._validate_upstream_host("203.0.113.5:8090") == "203.0.113.5"
