@@ -101,7 +101,7 @@ DOMAIN_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,253}[a-zA-Z0-9]$")
 def _validate_service_name(name: str) -> str:
     """Validate and return a service name, or raise 422."""
     if not SERVICE_NAME_RE.match(name):
-        raise HTTPException(422, f"Invalid service name: must match [a-zA-Z0-9_-]")
+        raise HTTPException(422, "Invalid service name: must match [a-zA-Z0-9_-]")
     return name
 
 

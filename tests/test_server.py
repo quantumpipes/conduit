@@ -5,13 +5,10 @@ Uses pytest + httpx TestClient for synchronous endpoint testing.
 """
 
 import json
-import os
-import tempfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 import pytest
-from httpx import ASGITransport, AsyncClient
 
 # ---------------------------------------------------------------------------
 # Fixtures
