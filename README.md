@@ -117,6 +117,7 @@ After setup, `grafana.internal` resolves via DNS, serves over HTTPS with an auto
 | `conduit-monitor.sh` | Show server hardware stats (GPU, CPU, memory, disk) |
 | `conduit-certs.sh` | List, rotate, or inspect TLS certificates |
 | `conduit-dns.sh` | List or flush DNS entries |
+| `conduit-exposure.sh` | Fail if any running container publishes a port beyond localhost |
 | `conduit-logs.sh` | Aggregate and stream service logs |
 
 ---

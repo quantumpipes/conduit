@@ -21,6 +21,7 @@ Internal infrastructure automation for on-premises AI deployments. Bash + Makefi
 ./conduit-monitor.sh [--server <ip>] [--containers]
 ./conduit-certs.sh [--rotate <n>] [--inspect <n>] [--trust]
 ./conduit-dns.sh [--flush] [--resolve <domain>]
+./conduit-exposure.sh [--json]                     # exit 1 if a container binds 0.0.0.0 / [::]
 ./conduit-logs.sh
 
 # Makefile

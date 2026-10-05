@@ -100,6 +100,10 @@ conduit-dns-resolve: ## Test DNS resolution (DOMAIN=grafana.internal)
 conduit-verify: ## Verify Capsule audit chain integrity
 	@bash -c 'source $(CONDUIT_DIR)/conduit-preflight.sh && qp-capsule verify'
 
+.PHONY: conduit-exposure
+conduit-exposure: ## Fail if any container publishes a port beyond localhost
+	@$(CONDUIT_DIR)/conduit-exposure.sh
+
 # ---------------------------------------------------------------------------
 # Docker (recommended)
 # ---------------------------------------------------------------------------

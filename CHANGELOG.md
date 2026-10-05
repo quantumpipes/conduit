@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+
+- **`conduit-exposure.sh` and `make conduit-exposure`.** Fails (exit 1) when any running container publishes a port on `0.0.0.0` or `[::]`, and names the container and binding. Exits 2 when Docker cannot be read, so a failed look never reports clean. `--json` gives a machine-readable list. 9 bats tests in `tests/unit/test_exposure.bats` with Docker stubbed.
+
 ## [0.2.0] - 2026-04-07
 
 ### Added
